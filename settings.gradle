@@ -1,0 +1,5 @@
+rootProject.name = 'projects-management-system'
+
+includeBuild 'eureka-server'
+includeBuild 'projects-service'
+includeBuild 'api-gateway'
