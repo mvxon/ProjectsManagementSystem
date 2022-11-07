@@ -4,15 +4,6 @@ plugins {
     id 'java'
 }
 
-
-sourceCompatibility = '17'
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 repositories {
     mavenCentral()
 }
@@ -23,8 +14,4 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }
