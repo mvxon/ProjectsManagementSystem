@@ -1,5 +1,6 @@
 package com.strigalev.authenticationservice.domain;
 
+import com.strigalev.starter.domain.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

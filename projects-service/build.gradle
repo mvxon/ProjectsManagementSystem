@@ -4,15 +4,6 @@ plugins {
     id 'java'
 }
 
-group = 'com.strigalev'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
 
 repositories {
     mavenCentral()
@@ -23,7 +14,7 @@ ext {
 }
 
 dependencies {
-    compileOnly project(':starter')
+    implementation project(':starter')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation group: 'org.flywaydb', name: 'flyway-core', version: '9.7.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
@@ -46,6 +37,6 @@ dependencyManagement {
     }
 }
 
-tasks.named('test') {
+test {
     useJUnitPlatform()
 }
