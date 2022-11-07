@@ -1,10 +1,10 @@
 package com.strigalev.projectsservice.endpoint;
 
-import com.strigalev.projectsservice.dto.ApiResponseEntity;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
+import com.strigalev.starter.dto.ApiResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -80,7 +80,7 @@ public class TaskEndpoint {
         projectService.addTaskToProject(projectId, taskId);
         return new ResponseEntity<>(
                 ApiResponseEntity.builder()
-                        .objectId(taskId)
+                        .object(taskId)
                         .build(),
                 CREATED
         );

@@ -9,6 +9,7 @@ import com.strigalev.projectsservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import static com.strigalev.projectsservice.util.MethodsUtil.getProjectNotExists
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User getUserById(Long id) {
@@ -30,8 +32,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Long createUser(UserDTO userDTO) {
-        return null;
+    public Long saveUser(UserDTO userDTO) {
+        User mappedUser = userMapper.map(userDTO);
+        mappedUser.setPassword(passwordEncoder.encode(mappedUser.getPassword()));
+        return userRepository.save(mappedUser).getId();
     }
 
     @Override

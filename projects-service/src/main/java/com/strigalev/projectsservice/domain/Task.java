@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,9 +40,9 @@ public class Task {
     @PreRemove
     private void preRemove() {
         employees.forEach(employee -> {
-            Set<Task> tasks = employee.getWorkingTasks().stream()
+            List<Task> tasks = employee.getWorkingTasks().stream()
                     .filter(task -> !task.equals(this))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toList());
             employee.setWorkingTasks(tasks);
         });
     }

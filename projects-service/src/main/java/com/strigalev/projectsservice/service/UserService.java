@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 public interface UserService {
     User getUserById(Long id);
 
-    Long createUser(UserDTO userDTO);
+    Long saveUser(UserDTO userDTO);
 
     void updateUser(UserDTO userDTO);
 

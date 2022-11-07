@@ -1,9 +1,9 @@
 package com.strigalev.projectsservice.endpoint;
 
 
-import com.strigalev.projectsservice.dto.ApiResponseEntity;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import com.strigalev.projectsservice.service.ProjectService;
+import com.strigalev.starter.dto.ApiResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -69,7 +69,7 @@ public class ProjectEndpoint {
     public ResponseEntity<ApiResponseEntity> createProject(@RequestBody @Valid ProjectDTO projectDTO) {
         return new ResponseEntity<>(
                 ApiResponseEntity.builder()
-                        .objectId(projectService.createProject(projectDTO))
+                        .object(projectService.createProject(projectDTO))
                         .build(),
                 CREATED
         );

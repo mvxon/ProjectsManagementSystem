@@ -1,4 +1,4 @@
-package com.strigalev.projectsservice.domain;
+package com.strigalev.starter.domain;
 
 
 public enum Role {

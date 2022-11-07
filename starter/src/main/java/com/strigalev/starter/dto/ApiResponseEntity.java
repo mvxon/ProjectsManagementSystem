@@ -1,19 +1,21 @@
-package com.strigalev.projectsservice.dto;
+package com.strigalev.starter.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class ApiResponseEntity {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private HttpStatus httpStatus;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long objectId;
+    private Object object;
 }
-
