@@ -29,8 +29,13 @@ public final class MethodsUtil {
     public static String getTaskNotExistsMessage(Long taskId) {
         return String.format("Task with %oid does not exists", taskId);
     }
+
     public static String getUserNotExistsMessage(Long userId) {
         return String.format("User with %oid does not exists", userId);
+    }
+
+    public static String getUserWithEmailNotExistsMessage(String email) {
+        return String.format("User with email: %s does not exists", email);
     }
 
 }

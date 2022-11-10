@@ -1,5 +1,6 @@
 package com.strigalev.projectsservice.exception;
 
+import com.strigalev.starter.dto.ApiResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   HttpHeaders headers,
                                                                   HttpStatus status,
                                                                   WebRequest request) {
-        return ResponseEntity.badRequest().body(ApiException.builder()
+        return ResponseEntity.badRequest().body(ApiResponseEntity.builder()
                 .errorCode(ex.getMessage())
                 .status(status)
                 .message(getBindingResultErrors(ex.getBindingResult()))
@@ -34,7 +35,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                                                              HttpHeaders headers,
                                                              HttpStatus status,
                                                              WebRequest request) {
-        return new ResponseEntity<>(ApiException.builder()
+        return new ResponseEntity<>(ApiResponseEntity.builder()
                 .errorCode(ex.getMessage())
                 .status(status)
                 .build(), status);
@@ -42,8 +43,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(NOT_FOUND)
-    protected ApiException handleResourceNotFound(ResourceNotFoundException ex) {
-        return ApiException.builder()
+    protected ApiResponseEntity handleResourceNotFound(ResourceNotFoundException ex) {
+        return ApiResponseEntity.builder()
                 .message(ex.getMessage())
                 .status(NOT_FOUND)
                 .build();

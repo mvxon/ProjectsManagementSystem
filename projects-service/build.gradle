@@ -16,6 +16,7 @@ ext {
 dependencies {
     implementation project(':starter')
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation group: 'org.flywaydb', name: 'flyway-core', version: '9.7.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     testImplementation 'org.projectlombok:lombok:1.18.22'

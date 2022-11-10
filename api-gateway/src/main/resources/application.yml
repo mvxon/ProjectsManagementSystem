@@ -1,16 +1,9 @@
 eureka:
-  instance:
-    prefer-ip-address: true
   client:
     service-url:
       defaultZone: http://localhost:8081/eureka
 server:
   port: 8082
-management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
 spring:
   application:
     name: api-gateway
@@ -20,5 +13,13 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+  main:
+    web-application-type: reactive
+
+
+
+
+
+
 
 

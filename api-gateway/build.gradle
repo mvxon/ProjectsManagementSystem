@@ -13,10 +13,14 @@ ext {
 }
 
 dependencies {
+	implementation project(":starter")
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.4'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	implementation group: 'com.netflix.feign', name: 'feign-jackson', version: '8.18.0'
 }
 
 dependencyManagement {

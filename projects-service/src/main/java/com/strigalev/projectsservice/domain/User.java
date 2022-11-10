@@ -1,6 +1,6 @@
 package com.strigalev.projectsservice.domain;
 
-import com.strigalev.starter.domain.Role;
+import com.strigalev.starter.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +20,7 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     private String firstName;
     private String lastName;
     private String password;

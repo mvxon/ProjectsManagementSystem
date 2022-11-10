@@ -1,7 +1,9 @@
 package com.strigalev.projectsservice.service.impl;
 
 import com.strigalev.projectsservice.domain.User;
-import com.strigalev.projectsservice.dto.UserDTO;
+import com.strigalev.projectsservice.dto.SignUpRequest;
+import com.strigalev.starter.model.Role;
+import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.UserMapper;
 import com.strigalev.projectsservice.repository.UserRepository;
@@ -13,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.strigalev.projectsservice.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.projectsservice.util.MethodsUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,22 +28,17 @@ public class UserServiceImpl implements UserService {
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException(getProjectNotExistsMessage(id))
+                        () -> new ResourceNotFoundException(getUserNotExistsMessage(id))
                 );
     }
 
     @Override
     @Transactional
-    public Long saveUser(UserDTO userDTO) {
-        User mappedUser = userMapper.map(userDTO);
-        mappedUser.setPassword(passwordEncoder.encode(mappedUser.getPassword()));
-        return userRepository.save(mappedUser).getId();
-    }
-
-    @Override
-    @Transactional
-    public void updateUser(UserDTO userDTO) {
-
+    public void saveUser(SignUpRequest signUpRequest) {
+        User mappedUser = userMapper.map(signUpRequest);
+        mappedUser.setRole(Role.EMPLOYEE);
+        mappedUser.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        userRepository.save(mappedUser);
     }
 
     @Override
@@ -71,5 +68,24 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("Page not found");
         }
         return users.map(userMapper::map);
+    }
+
+    @Override
+    public UserDTO getUserDetailsByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(getUserWithEmailNotExistsMessage(email))
+                );
+        return userMapper.mapWithPassword(user);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public UserDTO getUserDetailsById(Long id) {
+        return userMapper.mapWithPassword(getUserById(id));
     }
 }

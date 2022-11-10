@@ -1,3 +1,9 @@
+jwt:
+  accessTokenSecret: salam
+  refreshTokenSecret: aleykum
+  refreshTokenExpirationDays: 30
+  accessTokenExpirationMinutes: 20
+
 eureka:
   client:
     service-url:
@@ -5,14 +11,12 @@ eureka:
 spring:
   application:
     name: authentication-service
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/projects_management}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:1}
+server:
+  port: 0
+
+redis:
+  host: localhost
+  port: 6379
 
 
 

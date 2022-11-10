@@ -1,21 +1,19 @@
 package com.strigalev.authenticationservice.service;
 
-import com.strigalev.authenticationservice.domain.User;
-import com.strigalev.authenticationservice.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.strigalev.authenticationservice.dto.SignInDTO;
+import com.strigalev.starter.dto.TokenDTO;
+import com.strigalev.authenticationservice.security.model.CustomUserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class UserService implements UserDetailsService {
-    private final UserRepository userRepository;
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        //верни опшинал
-        User user = userRepository.findByEmail(email);
-        return null;
-    }
+public interface UserService extends UserDetailsService {
+    TokenDTO login(SignInDTO dto);
+
+    void logout(TokenDTO tokenDTO);
+
+    TokenDTO updateAccessToken(TokenDTO tokenDTO);
+
+    TokenDTO updateRefreshToken(TokenDTO tokenDTO);
+
+    TokenDTO validateToken(String token);
+
 }

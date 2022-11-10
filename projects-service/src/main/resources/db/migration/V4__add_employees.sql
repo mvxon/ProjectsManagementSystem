@@ -10,4 +10,4 @@ VALUES (1, 1), (1,2), (2,3), (3,4);
 INSERT INTO tasks_employees (task_id, employee_id)
 VALUES (1, 1), (2,2), (6,3), (7,4);
 
-SELECT setval('users_id_seq', (SELECT MAX(id) FROM tasks));
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));

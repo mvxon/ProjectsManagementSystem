@@ -1,4 +1,4 @@
-package com.strigalev.starter.domain;
+package com.strigalev.starter.model;
 
 
 public enum Role {

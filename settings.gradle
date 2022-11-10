@@ -1,4 +1,4 @@
-rootProject.name = 'projects-management-system'
+rootProject.name = 'ProjectsManagementSystem'
 
 include 'eureka-server'
 include 'projects-service'
