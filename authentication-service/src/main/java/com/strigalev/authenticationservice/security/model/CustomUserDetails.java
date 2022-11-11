@@ -2,6 +2,7 @@ package com.strigalev.authenticationservice.security.model;
 
 import com.strigalev.starter.model.Role;
 import lombok.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collections;
@@ -21,7 +22,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public List getAuthorities() {
-        return Collections.EMPTY_LIST;
+        return Collections.singletonList(new SimpleGrantedAuthority(role.toString()));
     }
 
     @Override

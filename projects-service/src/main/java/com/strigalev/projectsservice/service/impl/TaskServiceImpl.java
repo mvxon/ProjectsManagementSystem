@@ -18,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.strigalev.projectsservice.util.MethodsUtil.getProjectNotExistsMessage;
-import static com.strigalev.projectsservice.util.MethodsUtil.getTaskNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getTaskNotExistsMessage;
 
 @Service
 @RequiredArgsConstructor

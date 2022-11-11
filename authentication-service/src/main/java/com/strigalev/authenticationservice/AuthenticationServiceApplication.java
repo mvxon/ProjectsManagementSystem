@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.strigalev.starter", "com.strigalev.authenticationservice"})
 @EnableFeignClients
 @EnableEurekaClient
 public class AuthenticationServiceApplication {

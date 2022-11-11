@@ -10,12 +10,12 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.web.reactive.function.client.WebClient;
+
 
 @Configuration
 public class Config {
-    @Bean
+    /*@Bean
     public RouteLocator routeLocator(RouteLocatorBuilder rlb, AuthFilter authFilter) {
         return rlb
                 .routes()
@@ -24,12 +24,9 @@ public class Config {
                         .filters(f -> f.filter(authFilter.apply(new AuthFilter.Config())))
                         .uri("lb://projects-service")
                 )
-                /*.route(r -> r
-                        .path("/projects-service/api/v1/users", "/projects-service/api/v1/tasks/**")
-                        .filters(f -> f.filter(authFilter.apply(new AuthFilter.Config())))
-                        .uri("lb://projects-service"))*/
                 .build();
-    }
+    }*/
+
 
     @Bean
     public Decoder decoder() {

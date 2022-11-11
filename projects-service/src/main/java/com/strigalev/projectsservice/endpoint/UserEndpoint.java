@@ -40,19 +40,8 @@ public class UserEndpoint {
     }
 
     @GetMapping("/userDetails/{email}")
-    public ApiResponseEntity getUserDetailsByEmail(@PathVariable String email) {
-        return ApiResponseEntity.builder()
-                .status(HttpStatus.OK)
-                .object(userService.getUserDetailsByEmail(email))
-                .build();
-    }
-
-    @GetMapping("existsById/{id}")
-    public ApiResponseEntity getUserDetailsById(@PathVariable Long id) {
-        return ApiResponseEntity.builder()
-                .status(HttpStatus.OK)
-                .object(userService.getUserDetailsById(id))
-                .build();
+    public ResponseEntity<UserDTO> getUserDetailsByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(userService.getUserDetailsByEmail(email));
     }
 
     @PostMapping("/sign-up")

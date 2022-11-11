@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.strigalev.projectsservice.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @Tag(name = "Task", description = "Endpoints for tasks managing")

@@ -8,6 +8,7 @@ import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
+import com.strigalev.starter.rabbit.RabbitService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.strigalev.projectsservice.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
 
 
 @Service
@@ -26,16 +27,18 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     private final ProjectListMapper projectListMapper;
     private final TaskService taskService;
+    private final RabbitService rabbitService;
 
     public ProjectServiceImpl(ProjectRepository projectRepository,
                               ProjectMapper projectMapper,
                               ProjectListMapper projectListMapper,
-                              @Lazy TaskService taskService
-    ) {
+                              @Lazy TaskService taskService,
+                              RabbitService rabbitService) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.projectListMapper = projectListMapper;
         this.taskService = taskService;
+        this.rabbitService = rabbitService;
     }
 
     @Override
@@ -112,7 +115,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public Page<ProjectDTO> getAllProjectsPage(Pageable pageable) {
         Page<Project> projects = projectRepository.findAll(pageable);
-        if(projects.getContent().isEmpty()) {
+        if (projects.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
         return projects.map(projectListMapper::map);
@@ -121,7 +124,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public Page<ProjectDTO> getActiveProjectsPage(Pageable pageable) {
         Page<Project> projects = projectRepository.findAllByActiveIsTrue(pageable);
-        if(projects.getContent().isEmpty()) {
+        if (projects.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
         return projects.map(projectListMapper::map);

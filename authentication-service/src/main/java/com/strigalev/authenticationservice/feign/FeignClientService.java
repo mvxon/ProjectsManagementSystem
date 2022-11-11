@@ -1,6 +1,6 @@
 package com.strigalev.authenticationservice.feign;
 
-import com.strigalev.starter.dto.ApiResponseEntity;
+import com.strigalev.authenticationservice.security.model.CustomUserDetails;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,5 +10,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface FeignClientService {
 
     @GetMapping("/{email}")
-    ApiResponseEntity getUserDetailsByEmail(@PathVariable String email);
+    ResponseEntity<CustomUserDetails> getUserDetailsByEmail(@PathVariable String email);
 }

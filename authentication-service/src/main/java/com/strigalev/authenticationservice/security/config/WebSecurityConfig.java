@@ -1,7 +1,6 @@
 package com.strigalev.authenticationservice.security.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.strigalev.authenticationservice.service.UserServiceImpl;
+import com.strigalev.authenticationservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
-    private UserServiceImpl userServiceImpl;
+    private UserService userService;
 
     @Bean
     @Override
@@ -31,7 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userServiceImpl)
+        auth.userDetailsService(userService)
                 .passwordEncoder(passwordEncoder());
     }
 
@@ -43,11 +42,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers("/**");
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
     }
 
 }

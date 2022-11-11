@@ -1,23 +1,24 @@
-package com.strigalev.authenticationservice.jwt;
+package com.strigalev.authenticationservice.jwt.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.strigalev.authenticationservice.jwt.RefreshToken;
+import com.strigalev.authenticationservice.repository.TokenRepository;
 import com.strigalev.authenticationservice.security.model.CustomUserDetails;
-import lombok.extern.log4j.Log4j2;
+import com.strigalev.starter.dto.TokenDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 
 @Component
-@Log4j2
-public class JwtService {
+public class JwtServiceImpl implements JwtService {
     static final String issuer = "Projects-Management-System";
     private final long accessTokenExpirationMs;
     private final long refreshTokenExpirationMs;
@@ -25,15 +26,19 @@ public class JwtService {
     private final Algorithm refreshTokenAlgorithm;
     private final JWTVerifier accessTokenVerifier;
     private final JWTVerifier refreshTokenVerifier;
+    private final TokenRepository tokenRepository;
 
-    public JwtService(@Value("${jwt.accessTokenSecret}") String accessTokenSecret,
-                      @Value("${jwt.refreshTokenSecret}") String refreshTokenSecret,
-                      @Value("${jwt.refreshTokenExpirationDays}") int refreshTokenExpirationDays,
-                      @Value("${jwt.accessTokenExpirationMinutes}") int accessTokenExpirationMinutes) {
+    @Autowired
+    public JwtServiceImpl(@Value("${jwt.accessTokenSecret}") String accessTokenSecret,
+                          @Value("${jwt.refreshTokenSecret}") String refreshTokenSecret,
+                          @Value("${jwt.refreshTokenExpirationDays}") int refreshTokenExpirationDays,
+                          @Value("${jwt.accessTokenExpirationMinutes}") int accessTokenExpirationMinutes,
+                          TokenRepository tokenRepository) {
         accessTokenExpirationMs = (long) accessTokenExpirationMinutes * 60 * 1000;
         refreshTokenExpirationMs = (long) refreshTokenExpirationDays * 24 * 60 * 60 * 1000;
         accessTokenAlgorithm = Algorithm.HMAC512(accessTokenSecret);
         refreshTokenAlgorithm = Algorithm.HMAC512(refreshTokenSecret);
+        this.tokenRepository = tokenRepository;
         accessTokenVerifier = JWT.require(accessTokenAlgorithm)
                 .withIssuer(issuer)
                 .build();
@@ -66,26 +71,45 @@ public class JwtService {
         try {
             return Optional.of(accessTokenVerifier.verify(token));
         } catch (JWTVerificationException e) {
-            log.error("invalid access token", e);
+            throw new BadCredentialsException("Invalid access token");
         }
-        return Optional.empty();
     }
 
     private Optional<DecodedJWT> decodeRefreshToken(String token) {
         try {
             return Optional.of(refreshTokenVerifier.verify(token));
         } catch (JWTVerificationException e) {
-            log.error("invalid refresh token", e);
+            throw new BadCredentialsException("Invalid refresh token");
         }
-        return Optional.empty();
     }
 
-    public boolean validateAccessToken(String token) {
-        return decodeAccessToken(token).isPresent();
+    public void validateAndDeleteRefreshToken(String refreshToken) {
+        validateRefreshToken(refreshToken);
+        tokenRepository.deleteById(getTokenIdFromRefreshToken(refreshToken));
     }
 
-    public boolean validateRefreshToken(String token) {
-        return decodeRefreshToken(token).isPresent();
+    public TokenDTO generateTokensPair(CustomUserDetails userDetails) {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setOwnerId(userDetails.getId());
+        tokenRepository.save(refreshToken);
+        refreshToken.setToken(generateRefreshToken(userDetails, refreshToken));
+        tokenRepository.save(refreshToken);
+        return TokenDTO.builder()
+                .accessToken(generateAccessToken(userDetails))
+                .refreshToken(refreshToken.getToken())
+                .userId(userDetails.getId())
+                .build();
+    }
+
+    public void validateAccessToken(String token) {
+        decodeAccessToken(token);
+    }
+
+    public void validateRefreshToken(String token) {
+        decodeRefreshToken(token);
+        if (!tokenRepository.existsById(getTokenIdFromRefreshToken(token))) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
     }
 
     public String getUserEmailFromAccessToken(String token) {
@@ -98,13 +122,5 @@ public class JwtService {
 
     public Long getTokenIdFromRefreshToken(String token) {
         return decodeRefreshToken(token).get().getClaim("tokenId").asLong();
-    }
-
-    public Optional<String> parseAccessToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-            return Optional.of(authHeader.replace("Bearer ", ""));
-        }
-        return Optional.empty();
     }
 }

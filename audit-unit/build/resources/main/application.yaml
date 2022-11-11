@@ -1,0 +1,23 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+server:
+  port: 0
+spring:
+  application:
+    name:
+      audit-unit
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: projects_audit
+  rabbitmq:
+    host: localhost
+    password: guest
+    port: 15672
+    username: guest
+    exchange: projects.exchange
+    routing-key: projects.routingKey
+    queue: projects.queue

@@ -21,23 +21,17 @@ public class AuthEndpoint {
     }
 
     @PostMapping("/logout")
-    public void logout(@RequestBody @Valid TokenDTO tokenDTO) {
-        userService.logout(tokenDTO);
-    }
-
-
-    @PostMapping("/access-token")
-    public ResponseEntity<TokenDTO> updateAccessToken(@RequestBody @Valid TokenDTO tokenDTO) {
-        return ResponseEntity.ok(userService.updateAccessToken(tokenDTO));
+    public void logout(@RequestParam(name = "refreshToken") String refreshToken) {
+        userService.logout(refreshToken);
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<TokenDTO> updateRefreshToken(@RequestBody @Valid TokenDTO tokenDTO) {
-        return ResponseEntity.ok(userService.updateRefreshToken(tokenDTO));
+    public ResponseEntity<TokenDTO> updateRefreshToken(@RequestParam(name = "refreshToken") String refreshToken) {
+        return ResponseEntity.ok(userService.updateRefreshToken(refreshToken));
     }
 
     @PostMapping("/validateToken")
-    public TokenDTO validateToken(@RequestParam(name = "token") String token) {
-        return userService.validateToken(token);
+    public TokenDTO validateToken(@RequestParam(name = "token") String accessToken) {
+        return userService.validateAccessToken(accessToken);
     }
 }

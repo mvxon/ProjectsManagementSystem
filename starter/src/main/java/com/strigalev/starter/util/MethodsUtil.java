@@ -1,4 +1,4 @@
-package com.strigalev.projectsservice.util;
+package com.strigalev.starter.util;
 
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -37,5 +37,4 @@ public final class MethodsUtil {
     public static String getUserWithEmailNotExistsMessage(String email) {
         return String.format("User with email: %s does not exists", email);
     }
-
 }

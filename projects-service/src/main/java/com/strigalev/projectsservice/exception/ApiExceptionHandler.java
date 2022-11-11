@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import static com.strigalev.projectsservice.util.MethodsUtil.getBindingResultErrors;
+import static com.strigalev.starter.util.MethodsUtil.getBindingResultErrors;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
