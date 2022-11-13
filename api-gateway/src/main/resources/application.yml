@@ -1,10 +1,8 @@
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8081/eureka
 server:
-  port: 8082
+  port: 8777
 spring:
+  main:
+    web-application-type: reactive
   application:
     name: api-gateway
   cloud:
@@ -13,13 +11,7 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-  main:
-    web-application-type: reactive
-
-
-
-
-
-
-
-
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka

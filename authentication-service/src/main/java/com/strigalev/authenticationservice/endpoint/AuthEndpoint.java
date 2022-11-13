@@ -3,6 +3,7 @@ package com.strigalev.authenticationservice.endpoint;
 import com.strigalev.authenticationservice.dto.SignInDTO;
 import com.strigalev.starter.dto.TokenDTO;
 import com.strigalev.authenticationservice.service.UserService;
+import com.strigalev.starter.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,18 +21,18 @@ public class AuthEndpoint {
         return ResponseEntity.ok(userService.login(signInDTO));
     }
 
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public void logout(@RequestParam(name = "refreshToken") String refreshToken) {
         userService.logout(refreshToken);
     }
 
-    @PostMapping("/refresh-token")
+    @GetMapping("/refresh-token")
     public ResponseEntity<TokenDTO> updateRefreshToken(@RequestParam(name = "refreshToken") String refreshToken) {
         return ResponseEntity.ok(userService.updateRefreshToken(refreshToken));
     }
 
-    @PostMapping("/validateToken")
-    public TokenDTO validateToken(@RequestParam(name = "token") String accessToken) {
+    @GetMapping("/validateToken")
+    public UserDTO validateToken(@RequestParam(name = "token") String accessToken) {
         return userService.validateAccessToken(accessToken);
     }
 }

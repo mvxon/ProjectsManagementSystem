@@ -8,7 +8,7 @@ import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
-import com.strigalev.starter.rabbit.RabbitService;
+import com.strigalev.starter.rabbit.RabbitMQService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,21 +27,22 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     private final ProjectListMapper projectListMapper;
     private final TaskService taskService;
-    private final RabbitService rabbitService;
+    private final RabbitMQService rabbitMQService;
 
     public ProjectServiceImpl(ProjectRepository projectRepository,
                               ProjectMapper projectMapper,
                               ProjectListMapper projectListMapper,
                               @Lazy TaskService taskService,
-                              RabbitService rabbitService) {
+                              RabbitMQService rabbitMQService) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.projectListMapper = projectListMapper;
         this.taskService = taskService;
-        this.rabbitService = rabbitService;
+        this.rabbitMQService = rabbitMQService;
     }
 
     @Override
+    @Transactional
     public Project getProjectById(Long id) {
         return projectRepository.findById(id)
                 .orElseThrow(

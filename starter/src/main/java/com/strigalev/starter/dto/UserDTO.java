@@ -18,8 +18,11 @@ public class UserDTO {
     private String firstName;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String lastName;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String email;
     private Role role;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String newAccessToken;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String password;
 }

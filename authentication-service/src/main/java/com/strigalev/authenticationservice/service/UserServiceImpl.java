@@ -6,7 +6,8 @@ import com.strigalev.authenticationservice.jwt.service.JwtService;
 import com.strigalev.authenticationservice.jwt.service.JwtServiceImpl;
 import com.strigalev.authenticationservice.security.model.CustomUserDetails;
 import com.strigalev.starter.dto.TokenDTO;
-import com.strigalev.starter.rabbit.RabbitService;
+import com.strigalev.starter.dto.UserDTO;
+import com.strigalev.starter.rabbit.RabbitMQService;
 import feign.FeignException;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,16 +26,16 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    private final RabbitService rabbitService;
+    private final RabbitMQService rabbitMQService;
 
     public UserServiceImpl(FeignClientService feignClientService,
                            @Lazy AuthenticationManager authenticationManager,
                            JwtServiceImpl jwtService,
-                           RabbitService rabbitService) {
+                           RabbitMQService rabbitMQService) {
         this.feignClientService = feignClientService;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.rabbitService = rabbitService;
+        this.rabbitMQService = rabbitMQService;
     }
 
     @Override
@@ -42,6 +43,7 @@ public class UserServiceImpl implements UserService {
         try {
             return feignClientService.getUserDetailsByEmail(email).getBody();
         } catch (FeignException e) {
+            e.printStackTrace();
             throw new BadCredentialsException("User with email: " + email + " not found");
         }
     }
@@ -55,7 +57,7 @@ public class UserServiceImpl implements UserService {
             ));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            rabbitService.sendAuditMessage("LOGIN", new Date(), user.getEmail());
+            rabbitMQService.sendAuditMessage("LOGIN", new Date(), user.getEmail());
             return jwtService.generateTokensPair(user);
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Wrong password");
@@ -65,7 +67,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logout(String refreshToken) {
         jwtService.validateAndDeleteRefreshToken(refreshToken);
-        rabbitService.sendAuditMessage("LOGOUT", new Date(), jwtService.getUserEmailFromRefreshToken(refreshToken));
+        rabbitMQService.sendAuditMessage("LOGOUT", new Date(), jwtService.getUserEmailFromRefreshToken(refreshToken));
     }
 
     @Override
@@ -78,12 +80,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public TokenDTO validateAccessToken(String token) {
+    public UserDTO validateAccessToken(String token) {
         jwtService.validateAccessToken(token);
         CustomUserDetails user = loadUserByUsername(jwtService.getUserEmailFromAccessToken(token));
-        return TokenDTO.builder()
-                .accessToken(jwtService.generateAccessToken(user))
-                .userId(user.getId())
+        return UserDTO.builder()
+                .newAccessToken(jwtService.generateAccessToken(user))
+                .id(user.getId())
                 .build();
     }
 

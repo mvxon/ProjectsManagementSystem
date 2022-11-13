@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-public class RabbitService {
+public class RabbitMQService {
     @Value("${spring.rabbitmq.exchange}")
     private String exchange;
     @Value("${spring.rabbitmq.routingkey}")

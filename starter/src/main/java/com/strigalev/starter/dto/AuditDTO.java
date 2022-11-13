@@ -18,4 +18,8 @@ public class AuditDTO {
     private String action;
     private Date date;
     private String userEmail;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long projectId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long taskId;
 }
