@@ -1,7 +1,7 @@
 package com.strigalev.projectsservice.security;
 
-import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.service.UserService;
+import com.strigalev.starter.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Optional;
 
 
 @Slf4j
@@ -38,7 +37,7 @@ public class UserIdFilter extends OncePerRequestFilter {
         }
         try {
             Long userId = Long.parseLong(request.getHeader("X-auth-user-id"));
-            User user = userService.getUserById(userId);
+            UserDTO user = userService.getUserDtoById(userId);
             UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(
                     user,
                     null,
@@ -47,8 +46,8 @@ public class UserIdFilter extends OncePerRequestFilter {
             upat.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(upat);
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
-            log.error("MISSING ID HEADER");
+        } catch (NumberFormatException e) {
+            response.setStatus(403);
         }
 
     }

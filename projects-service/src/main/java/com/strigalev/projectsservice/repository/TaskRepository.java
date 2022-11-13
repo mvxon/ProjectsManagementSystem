@@ -8,8 +8,11 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
+    Optional<Task> findByIdAndActiveIsTrue(Long id);
 
     @Query(value = "SELECT * FROM tasks WHERE project_id = :id AND active = true", nativeQuery = true)
     Page<Task> findAllByProjectIdAndActiveIsTrue(Pageable pageable, @Param("id") Long projectId);

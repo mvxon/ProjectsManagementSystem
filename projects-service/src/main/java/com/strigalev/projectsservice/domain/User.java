@@ -29,11 +29,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @ManyToMany(mappedBy = "employees", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "employees", fetch = FetchType.LAZY)
     @Where(clause = "active")
     private Set<Project> workingProjects;
 
-    @ManyToMany(mappedBy = "employees", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "employees", fetch = FetchType.LAZY)
     @Where(clause = "active")
     private List<Task> workingTasks;
 }

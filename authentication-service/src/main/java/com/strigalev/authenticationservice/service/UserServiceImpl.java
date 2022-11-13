@@ -43,7 +43,6 @@ public class UserServiceImpl implements UserService {
         try {
             return feignClientService.getUserDetailsByEmail(email).getBody();
         } catch (FeignException e) {
-            e.printStackTrace();
             throw new BadCredentialsException("User with email: " + email + " not found");
         }
     }
