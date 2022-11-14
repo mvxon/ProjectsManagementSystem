@@ -12,12 +12,12 @@ import com.strigalev.starter.dto.TokenDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Optional;
 
-@Component
+@Service
 public class JwtServiceImpl implements JwtService {
     static final String issuer = "Projects-Management-System";
     private final long accessTokenExpirationMs;

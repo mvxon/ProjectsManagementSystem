@@ -3,7 +3,6 @@ package com.strigalev.projectsservice.security;
 import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,8 +20,12 @@ import java.util.Collections;
 @Slf4j
 public class UserIdFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public UserIdFilter(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -30,11 +33,6 @@ public class UserIdFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        String URI = request.getRequestURI();
-        if (URI.contains("/api/v1/users/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         try {
             Long userId = Long.parseLong(request.getHeader("X-auth-user-id"));
             UserDTO user = userService.getUserDtoById(userId);

@@ -32,5 +32,6 @@ VALUES (1, 'Formation of requirements',
        (14, 'Testing', 'Test all implemented functionality and check compliance with customer requirements', true, 3,
         '2022-07-05', '2022-11-05'),
        (15, 'Introduction', 'Present and implement the developed software', true, 3, '2022-07-05', '2022-12-20');
+
 SELECT setval('tasks_id_seq', (SELECT MAX(id) FROM tasks));
 

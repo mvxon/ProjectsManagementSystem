@@ -12,11 +12,15 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiResponseEntity {
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Object object;
+
     private HttpStatus status;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String errorCode;
 }

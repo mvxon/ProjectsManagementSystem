@@ -37,10 +37,3 @@ application:
   version: 1.0
 server:
   port: 0
-
-
-
-
-
-
-

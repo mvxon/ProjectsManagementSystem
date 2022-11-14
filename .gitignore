@@ -16,7 +16,6 @@ dist/
 
 # Maven
 target/
-dist/
 
 # JetBrains IDE
 .idea/
@@ -78,3 +77,19 @@ HELP.md
 
 ### Local env vars
 .env*
+/starter/build/
+/projects-service/build/
+/projects-service/.gradle/
+/authentication-service/build/
+/audit-unit/build/
+/audit-unit/gradle/
+/api-gateway/gradle/
+/api-gateway/build/
+/api-gateway/gradlew.bat
+/api-gateway/gradlew
+/audit-unit/gradlew
+/audit-unit/gradlew.bat
+/.idea/
+/.gradle/
+/gradlew.bat
+/gradlew

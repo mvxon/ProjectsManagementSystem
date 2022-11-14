@@ -1,5 +1,6 @@
 package com.strigalev.projectsservice.security;
 
+import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.model.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -21,40 +22,54 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final static String PATH_PROJECTS = "/api/v1/projects/**";
+    private static final String PATH_TASKS = "/api/v1/tasks/**";
+    private final UserService userService;
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserIdFilter userIdFilter() {
-        return new UserIdFilter();
-    }
-
-
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/api/v1/users/**");
+        web.ignoring().antMatchers(
+                "/api/v1/users/**",
+                "/v2/api-docs",
+                "/configuration/ui",
+                "/swagger-resources/**",
+                "/configuration/**",
+                "/swagger-ui/index.html",
+                "/webjars/**"
+        );
     }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/api/v1/projects")
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.POST, PATH_PROJECTS)
                 .hasAuthority(Role.ADMIN.name())
-                .antMatchers(HttpMethod.POST, "/api/v1/tasks")
+
+                .antMatchers(HttpMethod.POST, PATH_TASKS)
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
-                .antMatchers(HttpMethod.DELETE, "/api/v1/projects/**")
+
+                .antMatchers(HttpMethod.DELETE, PATH_PROJECTS)
                 .hasAuthority(Role.ADMIN.name())
-                .antMatchers(HttpMethod.DELETE, "/api/v1/tasks/**")
+
+                .antMatchers(HttpMethod.DELETE, PATH_TASKS)
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
-                .antMatchers(HttpMethod.PUT, "/api/v1/projects/**")
+
+                .antMatchers(HttpMethod.PUT, PATH_PROJECTS)
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
-                .antMatchers(HttpMethod.PUT, "/api/v1/tasks/**")
+
+                .antMatchers(HttpMethod.PUT, PATH_TASKS)
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
+
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(userIdFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new UserIdFilter(userService), UsernamePasswordAuthenticationFilter.class);
     }
 }

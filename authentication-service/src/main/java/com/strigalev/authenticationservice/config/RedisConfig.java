@@ -1,15 +1,11 @@
 package com.strigalev.authenticationservice.config;
 
-import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -22,6 +18,7 @@ public class RedisConfig {
         var configuration = new RedisStandaloneConfiguration();
         configuration.setHostName("localhost");
         configuration.setPort(6379);
+
         return new JedisConnectionFactory(configuration);
     }
 
@@ -35,6 +32,7 @@ public class RedisConfig {
         template.setValueSerializer(new JdkSerializationRedisSerializer());
         template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
+
         return template;
     }
 

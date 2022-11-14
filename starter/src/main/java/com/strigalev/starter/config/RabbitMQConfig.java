@@ -1,5 +1,6 @@
 package com.strigalev.starter.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -14,13 +15,13 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     @Value("${spring.rabbitmq.host}")
-    String host;
+    private String host;
 
     @Value("${spring.rabbitmq.username}")
-    String username;
+    private String username;
 
     @Value("${spring.rabbitmq.password}")
-    String password;
+    private String password;
 
     @Value("${spring.rabbitmq.queue}")
     private String queue;
@@ -55,12 +56,15 @@ public class RabbitMQConfig {
         CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(host);
         cachingConnectionFactory.setUsername(username);
         cachingConnectionFactory.setPassword(password);
+
         return cachingConnectionFactory;
     }
 
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+
+        return new Jackson2JsonMessageConverter(mapper);
     }
 
     @Bean

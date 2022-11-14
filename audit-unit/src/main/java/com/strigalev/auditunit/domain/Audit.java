@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Document("audit")
 @Data
@@ -15,9 +15,10 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Audit {
+
     @Id
     private String id;
     private String action;
-    private Date date;
+    private LocalDateTime date;
     private String userEmail;
 }

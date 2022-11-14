@@ -26,9 +26,3 @@ jwt:
   refreshTokenSecret: aleykum
   refreshTokenExpirationDays: 30
   accessTokenExpirationMinutes: 20
-
-
-
-
-
-

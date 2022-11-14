@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -18,12 +17,14 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String firstName;
     private String lastName;
     private String password;
+    @Column(unique = true)
     private String email;
 
     @Enumerated(EnumType.STRING)
@@ -35,5 +36,5 @@ public class User {
 
     @ManyToMany(mappedBy = "employees", fetch = FetchType.LAZY)
     @Where(clause = "active")
-    private List<Task> workingTasks;
+    private Set<Task> workingTasks;
 }

@@ -1,11 +1,13 @@
 package com.strigalev.authenticationservice.security.model;
 
 import com.strigalev.starter.model.Role;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -17,12 +19,11 @@ public class CustomUserDetails implements UserDetails {
     private Long id;
     private String email; // email
     private String password;
-
     private Role role;
 
     @Override
     public List getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(role.toString()));
+        return List.of(new SimpleGrantedAuthority(role.toString()));
     }
 
     @Override

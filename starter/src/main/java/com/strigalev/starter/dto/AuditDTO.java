@@ -6,20 +6,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class AuditDTO {
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String id;
+
     private String action;
-    private Date date;
+    private LocalDateTime date;
     private String userEmail;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long projectId;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long taskId;
 }

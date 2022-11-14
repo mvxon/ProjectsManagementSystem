@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,6 +17,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Builder
 public class Task {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,9 +39,9 @@ public class Task {
     @PreRemove
     private void preRemove() {
         employees.forEach(employee -> {
-            List<Task> tasks = employee.getWorkingTasks().stream()
+            Set<Task> tasks = employee.getWorkingTasks().stream()
                     .filter(task -> !task.equals(this))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
             employee.setWorkingTasks(tasks);
         });
     }

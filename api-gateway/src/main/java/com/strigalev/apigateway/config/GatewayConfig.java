@@ -23,18 +23,19 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder, AuthFilter authFilter) {
         return builder.routes()
-                .route("projects-service-route", r -> r
+                .route("projects-service-route", route -> route
                         .path(
                                 PATH + "projects/**",
                                 PATH + "tasks/**",
                                 PATH + "employees/**"
                         )
-                        .filters(f -> (f.stripPrefix(1)).filter(authFilter.apply(new AuthFilter.Config())))
+                        .filters(filter ->
+                                (filter.stripPrefix(1)).filter(authFilter.apply(new AuthFilter.Config())))
                         .uri("lb://projects-service/")
                 )
-                .route("userDetails-route", r -> r
+                .route("userDetails-route", route -> route
                         .path(PATH + "users/userDetails/**")
-                        .filters(f -> f.setStatus(HttpStatus.NOT_FOUND))
+                        .filters(filter -> filter.setStatus(HttpStatus.NOT_FOUND))
                         .uri("lb://projects-service/")
                 )
                 .build();

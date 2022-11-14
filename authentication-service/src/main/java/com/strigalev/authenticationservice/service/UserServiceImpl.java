@@ -18,7 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -56,9 +56,10 @@ public class UserServiceImpl implements UserService {
             ));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            rabbitMQService.sendAuditMessage("LOGIN", new Date(), user.getEmail());
+            rabbitMQService.sendAuditMessage("LOGIN", LocalDateTime.now(), user.getEmail());
             return jwtService.generateTokensPair(user);
         } catch (BadCredentialsException e) {
+            SecurityContextHolder.getContext().setAuthentication(null);
             throw new BadCredentialsException("Wrong password");
         }
     }
@@ -66,7 +67,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logout(String refreshToken) {
         jwtService.validateAndDeleteRefreshToken(refreshToken);
-        rabbitMQService.sendAuditMessage("LOGOUT", new Date(), jwtService.getUserEmailFromRefreshToken(refreshToken));
+        rabbitMQService.sendAuditMessage(
+                "LOGOUT",
+                LocalDateTime.now(),
+                jwtService.getUserEmailFromRefreshToken(refreshToken)
+        );
     }
 
     @Override
@@ -87,6 +92,4 @@ public class UserServiceImpl implements UserService {
                 .id(user.getId())
                 .build();
     }
-
 }
-

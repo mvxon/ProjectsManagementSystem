@@ -8,7 +8,7 @@ import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.UserMapper;
 import com.strigalev.projectsservice.repository.UserRepository;
 import com.strigalev.projectsservice.service.UserService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,11 +18,20 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.strigalev.starter.util.MethodsUtil.*;
 
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(
+            UserMapper userMapper,
+            UserRepository userRepository,
+            @Lazy PasswordEncoder passwordEncoder
+    ) {
+        this.userMapper = userMapper;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public User getUserById(Long id) {
