@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @Builder
 public class TaskDTO {
+
     private Long id;
 
     @NotEmpty(message = "Title should not be empty")

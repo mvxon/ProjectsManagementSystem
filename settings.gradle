@@ -1,5 +1,8 @@
-rootProject.name = 'projects-management-system'
+rootProject.name = 'ProjectsManagementSystem'
 
-includeBuild 'eureka-server'
-includeBuild 'projects-service'
-includeBuild 'api-gateway'
+include 'eureka-server'
+include 'projects-service'
+include 'api-gateway'
+include 'starter'
+include 'authentication-service'
+include 'audit-unit'

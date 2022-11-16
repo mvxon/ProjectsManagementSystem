@@ -1,0 +1,28 @@
+server:
+  port: 0
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+
+spring:
+  application:
+    name: authentication-service
+  rabbitmq:
+    host: localhost
+    password: guest
+    port: 15672
+    username: guest
+    exchange: projects.exchange
+    routing-key: projects.routingKey
+    queue: projects.queue
+
+redis:
+  host: localhost
+  port: 6379
+
+jwt:
+  accessTokenSecret: salam
+  refreshTokenSecret: aleykum
+  refreshTokenExpirationDays: 30
+  accessTokenExpirationMinutes: 20

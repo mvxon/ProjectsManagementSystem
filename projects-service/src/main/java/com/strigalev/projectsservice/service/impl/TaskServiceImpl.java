@@ -18,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.strigalev.projectsservice.util.MethodsUtil.getProjectNotExistsMessage;
-import static com.strigalev.projectsservice.util.MethodsUtil.getTaskNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getTaskNotExistsMessage;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +37,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task getTaskById(Long id) {
-        return taskRepository.findById(id).orElseThrow(
+        return taskRepository.findByIdAndActiveIsTrue(id).orElseThrow(
                 () -> new ResourceNotFoundException(getTaskNotExistsMessage(id))
         );
     }

@@ -1,10 +1,10 @@
 package com.strigalev.projectsservice.endpoint;
 
-import com.strigalev.projectsservice.dto.ApiResponseEntity;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
+import com.strigalev.starter.dto.ApiResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.strigalev.projectsservice.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @Tag(name = "Task", description = "Endpoints for tasks managing")
@@ -80,7 +80,7 @@ public class TaskEndpoint {
         projectService.addTaskToProject(projectId, taskId);
         return new ResponseEntity<>(
                 ApiResponseEntity.builder()
-                        .objectId(taskId)
+                        .object(taskId)
                         .build(),
                 CREATED
         );
