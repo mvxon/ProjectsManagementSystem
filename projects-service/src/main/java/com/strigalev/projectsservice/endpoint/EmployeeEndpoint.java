@@ -1,18 +1,15 @@
 package com.strigalev.projectsservice.endpoint;
 
 
+import com.strigalev.projectsservice.dto.EmployeeDTO;
 import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.dto.ApiResponseEntity;
-import com.strigalev.starter.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,21 +18,37 @@ public class EmployeeEndpoint {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseEntity> getUserById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseEntity> getEmployeeById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponseEntity.builder()
-                .object(userService.getUserDtoById(id))
+                .object(userService.getEmployeeDto(id))
                 .status(HttpStatus.OK)
                 .build());
     }
 
-    @GetMapping("/project/{projectId}")
-    public ResponseEntity<Page<UserDTO>> getEmployeesPageByProjectId(@PathVariable Long projectId, Pageable pageable) {
+    @GetMapping("/byProjectId/{projectId}")
+    public ResponseEntity<Page<EmployeeDTO>> getEmployeesPageByProjectId(@PathVariable Long projectId, Pageable pageable) {
         return ResponseEntity.ok(userService.getUsersPageByProjectId(projectId, pageable));
     }
 
+    @GetMapping("/byProjectName/{projectName}")
+    public ResponseEntity<Page<EmployeeDTO>> getEmployeesPageByProjectName(@PathVariable String projectName, Pageable pageable) {
+        return ResponseEntity.ok(userService.getUsersPageByProjectName(projectName, pageable));
+    }
     @GetMapping("/task/{taskId}")
-    public ResponseEntity<Page<UserDTO>> getEmployeesPageByTaskId(@PathVariable Long taskId, Pageable pageable) {
+    public ResponseEntity<Page<EmployeeDTO>> getEmployeesPageByTaskId(@PathVariable Long taskId, Pageable pageable) {
         return ResponseEntity.ok(userService.getUsersPageByTaskId(taskId, pageable));
     }
+
+    @GetMapping("/byFullName")
+    public ResponseEntity<ApiResponseEntity> getEmployeesByFullName(
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName
+    ) {
+        return ResponseEntity.ok(ApiResponseEntity.builder()
+                .object(userService.getEmployeesDtoByFullName(firstName, lastName))
+                .status(HttpStatus.OK)
+                .build());
+    }
+
 
 }

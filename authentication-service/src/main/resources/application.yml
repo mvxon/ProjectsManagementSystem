@@ -25,4 +25,4 @@ jwt:
   accessTokenSecret: salam
   refreshTokenSecret: aleykum
   refreshTokenExpirationDays: 30
-  accessTokenExpirationMinutes: 20
+  accessTokenExpirationMinutes: 300

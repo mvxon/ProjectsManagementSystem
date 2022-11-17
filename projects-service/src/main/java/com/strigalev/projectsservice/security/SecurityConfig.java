@@ -22,8 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final static String PATH_PROJECTS = "/api/v1/projects/**";
-    private static final String PATH_TASKS = "/api/v1/tasks/**";
+    private final static String PATH_PROJECTS = "/api/v1/projects";
+    private static final String PATH_TASKS = "/api/v1/tasks";
     private final UserService userService;
 
     @Bean
@@ -50,22 +50,36 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.authorizeRequests()
-                .antMatchers(HttpMethod.POST, PATH_PROJECTS)
+                .antMatchers(HttpMethod.POST, PATH_PROJECTS + "/**")
                 .hasAuthority(Role.ADMIN.name())
 
-                .antMatchers(HttpMethod.POST, PATH_TASKS)
+                .antMatchers(HttpMethod.POST, PATH_TASKS + "/**")
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
 
-                .antMatchers(HttpMethod.DELETE, PATH_PROJECTS)
+                .antMatchers(HttpMethod.DELETE, PATH_PROJECTS + "/**")
                 .hasAuthority(Role.ADMIN.name())
 
-                .antMatchers(HttpMethod.DELETE, PATH_TASKS)
+                .antMatchers(HttpMethod.DELETE, PATH_TASKS + "/**")
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
 
-                .antMatchers(HttpMethod.PUT, PATH_PROJECTS)
+                .antMatchers(HttpMethod.PATCH, PATH_PROJECTS + "/**")
+                .hasAnyAuthority(Role.ADMIN.name())
+
+                .antMatchers(HttpMethod.PUT, PATH_PROJECTS + "/**")
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
 
-                .antMatchers(HttpMethod.PUT, PATH_TASKS)
+                .antMatchers(HttpMethod.PUT, PATH_TASKS + "/**")
+                .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
+
+                .antMatchers(PATH_TASKS + "/takeForTesting/**")
+                .hasAnyAuthority(Role.TESTER.name(), Role.ADMIN.name(), Role.MANAGER.name())
+
+                .antMatchers(
+                        PATH_TASKS + "/open/**",
+                        PATH_TASKS + "/assignToEmployee/**",
+                        PATH_TASKS + "/setDocumented/**",
+                        PATH_PROJECTS + "/addEmployee/**"
+                )
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
 
                 .anyRequest().authenticated()

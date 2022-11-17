@@ -2,6 +2,7 @@ package com.strigalev.projectsservice.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.strigalev.projectsservice.domain.ProjectStatus;
 import com.strigalev.projectsservice.validation.annotation.Date;
 import com.strigalev.projectsservice.validation.annotation.ProjectName;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,8 @@ import javax.validation.constraints.Size;
 public class ProjectDTO {
 
     private Long id;
+
+    private ProjectStatus status;
 
     @ProjectName
     @NotEmpty(message = "Name should not be empty")

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-11-14T17:15:47+0300",
+    date = "2022-11-17T20:00:50+0300",
     comments = "version: 1.5.3.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-7.5.1.jar, environment: Java 17.0.4.1 (Amazon.com Inc.)"
 )
 @Component
@@ -26,6 +26,7 @@ public class TaskMapperImpl implements TaskMapper {
         TaskDTO.TaskDTOBuilder taskDTO = TaskDTO.builder();
 
         taskDTO.id( task.getId() );
+        taskDTO.status( task.getStatus() );
         taskDTO.title( task.getTitle() );
         taskDTO.description( task.getDescription() );
         if ( task.getCreationDate() != null ) {
@@ -69,6 +70,7 @@ public class TaskMapperImpl implements TaskMapper {
         if ( taskDTO.getDeadLineDate() != null ) {
             task.deadLineDate( LocalDate.parse( taskDTO.getDeadLineDate() ) );
         }
+        task.status( taskDTO.getStatus() );
 
         return task.build();
     }
@@ -94,5 +96,6 @@ public class TaskMapperImpl implements TaskMapper {
         else {
             task.setDeadLineDate( null );
         }
+        task.setStatus( taskDTO.getStatus() );
     }
 }

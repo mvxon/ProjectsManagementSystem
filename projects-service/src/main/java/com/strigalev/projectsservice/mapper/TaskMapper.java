@@ -16,12 +16,10 @@ public interface TaskMapper {
     List<TaskDTO> map(List<Task> tasks);
 
     @Mapping(target = "employees", ignore = true)
-    @Mapping(target = "active", ignore = true)
     Task map(TaskDTO taskDTO);
 
     @Mappings({
-            @Mapping(target = "employees", ignore = true),
-            @Mapping(target = "active", ignore = true)
+            @Mapping(target = "employees", ignore = true)
     })
     void updateTaskFromDto(TaskDTO taskDTO, @MappingTarget Task task);
 }

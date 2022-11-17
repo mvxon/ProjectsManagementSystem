@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import static com.strigalev.starter.util.MethodsUtil.getBindingResultErrors;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
@@ -47,6 +48,15 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ApiResponseEntity.builder()
                 .message(ex.getMessage())
                 .status(NOT_FOUND)
+                .build();
+    }
+
+    @ExceptionHandler(InvalidStatusException.class)
+    @ResponseStatus(BAD_REQUEST)
+    protected ApiResponseEntity handleInvalidStatusException (InvalidStatusException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(BAD_REQUEST)
                 .build();
     }
 }

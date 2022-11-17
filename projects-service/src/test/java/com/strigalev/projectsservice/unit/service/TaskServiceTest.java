@@ -78,16 +78,4 @@ public class TaskServiceTest {
         verify(taskRepository).setActiveFalseAllTasksByProjectId(ID);
     }
 
-    @Test
-    void softDeleteTask_shouldCallRepository() {
-        final Task testTask = new Task();
-        testTask.setActive(true);
-        when(taskRepository.findById(ID)).thenReturn(Optional.of(testTask));
-
-        taskService.softDeleteTask(ID);
-
-        assertFalse(testTask.isActive());
-        verify(taskRepository).save(testTask);
-    }
-
 }

@@ -1,10 +1,13 @@
 package com.strigalev.projectsservice.mapper;
 
 import com.strigalev.projectsservice.domain.User;
+import com.strigalev.projectsservice.dto.EmployeeDTO;
 import com.strigalev.projectsservice.dto.SignUpRequest;
 import com.strigalev.starter.dto.UserDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -18,8 +21,11 @@ public interface UserMapper {
 
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "role", ignore = true)
-    @Mapping(target = "workingProjects", ignore = true)
-    @Mapping(target = "workingTasks", ignore = true)
     User map(SignUpRequest signUpRequest);
 
+    @Mapping(target = "workingProjectsIds", ignore = true)
+    @Mapping(target = "workingTasksIds", ignore = true)
+    EmployeeDTO mapToEmployeeDto(User user);
+
+    List<EmployeeDTO> mapListToEmployeeDto(List<User> users);
 }

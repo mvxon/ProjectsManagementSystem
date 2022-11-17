@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-11-14T16:31:21+0300",
+    date = "2022-11-17T19:39:30+0300",
     comments = "version: 1.5.3.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-7.5.1.jar, environment: Java 17.0.4.1 (Amazon.com Inc.)"
 )
 @Component
@@ -24,6 +24,7 @@ public class ProjectMapperImpl implements ProjectMapper {
         ProjectDTO.ProjectDTOBuilder projectDTO = ProjectDTO.builder();
 
         projectDTO.id( project.getId() );
+        projectDTO.status( project.getStatus() );
         projectDTO.name( project.getName() );
         projectDTO.title( project.getTitle() );
         projectDTO.customer( project.getCustomer() );
@@ -56,6 +57,7 @@ public class ProjectMapperImpl implements ProjectMapper {
         if ( projectDTO.getDeadLineDate() != null ) {
             project.deadLineDate( LocalDate.parse( projectDTO.getDeadLineDate() ) );
         }
+        project.status( projectDTO.getStatus() );
 
         return project.build();
     }
@@ -83,5 +85,6 @@ public class ProjectMapperImpl implements ProjectMapper {
         else {
             project.setDeadLineDate( null );
         }
+        project.setStatus( projectDTO.getStatus() );
     }
 }

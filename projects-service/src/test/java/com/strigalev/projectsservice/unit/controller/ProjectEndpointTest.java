@@ -104,7 +104,7 @@ class ProjectEndpointTest {
     void deleteProject() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete(PATH + "/" + ID))
                 .andExpect(status().isOk());
-        verify(projectService).softDeleteProject(ID);
+        verify(projectService).deleteProject(ID);
     }
 
 

@@ -1,6 +1,7 @@
 package com.strigalev.projectsservice.service.impl;
 
 import com.strigalev.projectsservice.domain.Project;
+import com.strigalev.projectsservice.domain.ProjectStatus;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.ProjectListMapper;
@@ -8,45 +9,41 @@ import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
-import com.strigalev.starter.rabbit.RabbitMQService;
-import org.springframework.context.annotation.Lazy;
+import com.strigalev.projectsservice.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getProjectWithNameNotExistsMessage;
 
 
 @Service
+@RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
     private final ProjectListMapper projectListMapper;
     private final TaskService taskService;
-    private final RabbitMQService rabbitMQService;
+    private final UserService userService;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository,
-                              ProjectMapper projectMapper,
-                              ProjectListMapper projectListMapper,
-                              @Lazy TaskService taskService,
-                              RabbitMQService rabbitMQService) {
-        this.projectRepository = projectRepository;
-        this.projectMapper = projectMapper;
-        this.projectListMapper = projectListMapper;
-        this.taskService = taskService;
-        this.rabbitMQService = rabbitMQService;
+    @Override
+    public Project getProjectById(Long id) {
+        return projectRepository.findById(id)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(getProjectNotExistsMessage(id))
+                );
     }
 
     @Override
-    @Transactional
-    public Project getProjectById(Long id) {
-        return projectRepository.findByIdAndActiveIsTrue(id)
+    public Project getProjectByName(String name) {
+        return projectRepository.findByName(name)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException(getProjectNotExistsMessage(id))
+                        () -> new ResourceNotFoundException(getProjectWithNameNotExistsMessage(name))
                 );
     }
 
@@ -61,20 +58,28 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectMapper.map(projectDTO);
         project.setCreationDate(LocalDate.now());
         project.setDeadLineDate(LocalDate.parse(projectDTO.getDeadLineDate()));
-        project.setActive(true);
+        project.setStatus(ProjectStatus.CREATED);
+
         projectRepository.save(project);
         return project.getId();
     }
 
     @Override
-    public List<ProjectDTO> getAllProjects() {
-        return projectListMapper.map(projectRepository.findAll());
+    @Transactional
+    public void deleteProject(Long id) {
+        Project project = getProjectById(id);
+        project.setStatus(ProjectStatus.DELETED);
+        project.getEmployees().clear();
     }
 
     @Override
     @Transactional
-    public void deleteProject(Long id) {
-        projectRepository.deleteById(id);
+    public void setProjectStatus(Long projectId, ProjectStatus status) {
+        Project project = getProjectById(projectId);
+        project.setStatus(status);
+        project.setUpdateDate(LocalDate.now());
+
+        projectRepository.save(project);
     }
 
     @Override
@@ -93,16 +98,9 @@ public class ProjectServiceImpl implements ProjectService {
     public void updateProject(ProjectDTO projectDTO) {
         Project savedProject = getProjectById(projectDTO.getId());
         projectMapper.updateProjectFromDto(projectDTO, savedProject);
-        projectRepository.save(savedProject);
-    }
+        savedProject.setUpdateDate(LocalDate.now());
 
-    @Override
-    @Transactional
-    public void softDeleteProject(Long id) {
-        Project project = getProjectById(id);
-        project.setActive(false);
-        taskService.softDeleteAllTasksByProjectId(id);
-        projectRepository.save(project);
+        projectRepository.save(savedProject);
     }
 
     @Override
@@ -110,6 +108,8 @@ public class ProjectServiceImpl implements ProjectService {
     public void addTaskToProject(Long projectId, Long taskId) {
         Project project = getProjectById(projectId);
         project.getTasks().add(taskService.getTaskById(taskId));
+        project.setUpdateDate(LocalDate.now());
+
         projectRepository.save(project);
     }
 
@@ -123,11 +123,21 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Page<ProjectDTO> getActiveProjectsPage(Pageable pageable) {
-        Page<Project> projects = projectRepository.findAllByActiveIsTrue(pageable);
+    @Transactional
+    public void addEmployeeToProject(Long projectId, Long userId) {
+        Project project = getProjectById(projectId);
+        project.getEmployees().add(userService.getUserById(userId));
+
+        projectRepository.save(project);
+    }
+
+    @Override
+    public Page<ProjectDTO> getProjectsPageByStatus(ProjectStatus status, Pageable pageable) {
+        Page<Project> projects = projectRepository.findAllByStatus(pageable, status);
         if (projects.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
+
         return projects.map(projectListMapper::map);
     }
 }

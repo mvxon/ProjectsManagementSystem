@@ -1,5 +1,6 @@
 package com.strigalev.projectsservice.endpoint;
 
+import com.strigalev.projectsservice.domain.TaskStatus;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.service.ProjectService;
@@ -44,7 +45,7 @@ public class TaskEndpoint {
         return ResponseEntity.ok(taskService.getTaskDtoById(id));
     }
 
-    @GetMapping("/project/{projectId}")
+    @GetMapping("/byProjectId/{projectId}")
     @Operation(summary = "Get project tasks page", responses = {
             @ApiResponse(
                     responseCode = "200",
@@ -58,7 +59,20 @@ public class TaskEndpoint {
         if (!projectService.isProjectWithIdExists(projectId)) {
             throw new ResourceNotFoundException(getProjectNotExistsMessage(projectId));
         }
-        return ResponseEntity.ok(taskService.getProjectActiveTasksPage(pageable, projectId));
+        return ResponseEntity.ok(taskService.getAllProjectTasksPage(pageable, projectId));
+    }
+
+    @GetMapping("/byProjectId/{projectId}/byStatus")
+    public ResponseEntity<Page<TaskDTO>> getProjectTasksPageByStatus(
+            @PathVariable Long projectId,
+            @RequestParam("status") String status,
+            Pageable pageable
+    ) {
+        if (!projectService.isProjectWithIdExists(projectId)) {
+            throw new ResourceNotFoundException(getProjectNotExistsMessage(projectId));
+        }
+        return ResponseEntity.ok(taskService.getProjectTasksPageByStatus(pageable, projectId,
+                TaskStatus.valueOf(status.toUpperCase())));
     }
 
     @PostMapping("/{projectId}")
@@ -71,7 +85,9 @@ public class TaskEndpoint {
                     @ApiResponse(responseCode = "400", description = "BAD REQUEST", content = @Content),
                     @ApiResponse(responseCode = "500", description = "INTERNAL ERROR", content = @Content)
             })
-    public ResponseEntity<ApiResponseEntity> createTaskInProject(@PathVariable Long projectId, @RequestBody @Valid TaskDTO taskDTO
+    public ResponseEntity<ApiResponseEntity> createTaskInProject(
+            @PathVariable Long projectId,
+            @RequestBody @Valid TaskDTO taskDTO
     ) {
         if (!projectService.isProjectWithIdExists(projectId)) {
             throw new ResourceNotFoundException(getProjectNotExistsMessage(projectId));
@@ -94,7 +110,7 @@ public class TaskEndpoint {
             @ApiResponse(responseCode = "500", description = "INTERNAL ERROR")
     })
     public void deleteTask(@PathVariable Long id) {
-        taskService.softDeleteTask(id);
+        taskService.deleteTask(id);
     }
 
     @PutMapping("/{id}")
@@ -108,4 +124,52 @@ public class TaskEndpoint {
         taskDTO.setId(id);
         taskService.updateTask(taskDTO);
     }
+
+    @PatchMapping("/{id}")
+    public void setTaskStatus(@PathVariable Long id, @RequestParam("status") String status) {
+        taskService.setTaskStatus(id, TaskStatus.valueOf(status.toUpperCase()));
+    }
+
+    @PatchMapping("/open/{taskId}")
+    public void openTask(@PathVariable Long taskId) {
+        taskService.openTask(taskId);
+    }
+
+    @PatchMapping("/assignToUser/{taskId}")
+    public void assignTaskToUser(@PathVariable Long taskId, @RequestParam("userId") Long userId) {
+        taskService.assignTaskToUser(taskId, userId);
+    }
+
+    @PatchMapping("/unAssignToUser/{taskId}")
+    public void unAssignTaskToUser(@PathVariable Long taskId, @RequestParam("userId") Long userId) {
+        taskService.unAssignTaskToUser(taskId, userId);
+    }
+
+
+    @PatchMapping("/takeForDeveloping/{taskId}")
+    public ResponseEntity<ApiResponseEntity> takeTaskForDeveloping(@PathVariable Long taskId) {
+        return ResponseEntity.ok(ApiResponseEntity.builder()
+                .object(taskService.takeTaskForDeveloping(taskId))
+                .status(HttpStatus.OK)
+                .build());
+    }
+
+    @PatchMapping("/setCompleted/{taskId}")
+    public void setTaskCompleted(@PathVariable Long taskId) {
+        taskService.setTaskCompleted(taskId);
+    }
+
+    @PatchMapping("/takeForTesting/{taskId}")
+    public ResponseEntity<ApiResponseEntity> takeTaskForTesting(@PathVariable Long taskId) {
+        return ResponseEntity.ok(ApiResponseEntity.builder()
+                .object(taskService.takeTaskForTesting(taskId))
+                .status(HttpStatus.OK)
+                .build());
+    }
+
+    @PatchMapping("/setDocumented/{taskId}")
+    public void setTaskDocumented(@PathVariable Long taskId) {
+        taskService.setTaskDocumented(taskId);
+    }
+
 }

@@ -24,4 +24,9 @@ public class UserEndpoint {
     public ResponseEntity<UserDTO> getUserDetailsByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.getUserDetailsByEmail(email));
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
 }

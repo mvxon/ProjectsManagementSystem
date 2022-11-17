@@ -86,12 +86,4 @@ public class ProjectIntegrationTest extends IntegrationTestBase {
         assertNotEquals(oldProject, projectService.getProjectDtoById(ID));
     }
 
-    @Test
-    void testDeleteProject() throws Exception {
-        mockMvc.perform(delete(PATH + "/" + ID))
-                .andExpect(status().isOk());
-
-        assertFalse(projectService.getProjectById(ID).isActive());
-    }
-
 }

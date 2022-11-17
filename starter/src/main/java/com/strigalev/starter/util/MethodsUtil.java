@@ -26,6 +26,10 @@ public final class MethodsUtil {
         return String.format("Project with %oid does not exists", projectId);
     }
 
+    public static String getProjectWithNameNotExistsMessage(String name) {
+        return String.format("Project with name: %s does not exists", name);
+    }
+
     public static String getTaskNotExistsMessage(Long taskId) {
         return String.format("Task with %oid does not exists", taskId);
     }

@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface TaskListMapper {
@@ -18,6 +19,6 @@ public interface TaskListMapper {
     })
     TaskDTO map(Task task);
 
-    List<TaskDTO> map(List<Task> tasks);
+    List<TaskDTO> map(Set<Task> tasks);
 
 }

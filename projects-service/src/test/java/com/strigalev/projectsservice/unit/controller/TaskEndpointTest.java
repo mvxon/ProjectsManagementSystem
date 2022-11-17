@@ -103,7 +103,7 @@ class TaskEndpointTest {
     void deleteTask() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete(PATH + "/" + ID))
                 .andExpect(status().isOk());
-        verify(taskService).softDeleteTask(ID);
+        verify(taskService).deleteTask(ID);
     }
 
     @Test

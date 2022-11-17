@@ -31,7 +31,7 @@ public class TaskRepositoryTest extends IntegrationTestBase {
 
     @Test
     void testFindAllByActiveIsTrue() {
-        Page<Task> taskPage = taskRepository.findAllByProjectIdAndActiveIsTrue(PageRequest.of(0, 6), ID);
+        Page<Task> taskPage = taskRepository.findAllByProjectIdAndStatus(PageRequest.of(0, 6), ID);
         assertThat(taskPage.getContent(), hasSize(5));
     }
 

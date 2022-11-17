@@ -1,6 +1,7 @@
 package com.strigalev.projectsservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.strigalev.projectsservice.domain.TaskStatus;
 import com.strigalev.projectsservice.validation.annotation.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,8 @@ import javax.validation.constraints.Size;
 public class TaskDTO {
 
     private Long id;
+
+    private TaskStatus status;
 
     @NotEmpty(message = "Title should not be empty")
     @JsonInclude(JsonInclude.Include.NON_NULL)

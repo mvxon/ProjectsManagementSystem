@@ -15,13 +15,11 @@ public interface ProjectMapper {
     @Mapping(target = "tasks", ignore = true)
     @Mapping(target = "employees", ignore = true)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "active", ignore = true)
     Project map(ProjectDTO projectDTO);
 
     @Mappings({
             @Mapping(target = "tasks", ignore = true),
             @Mapping(target = "employees", ignore = true),
-            @Mapping(target = "active", ignore = true)
     })
     void updateProjectFromDto(ProjectDTO projectDTO, @MappingTarget Project project);
 }

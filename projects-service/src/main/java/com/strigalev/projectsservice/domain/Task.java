@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "tasks")
@@ -25,7 +24,11 @@ public class Task {
     private String description;
     private LocalDate creationDate;
     private LocalDate deadLineDate;
-    private boolean active;
+    private LocalDate updateDate;
+
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
+
     @ManyToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE}
@@ -35,14 +38,4 @@ public class Task {
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "employee_id"))
     Set<User> employees;
-
-    @PreRemove
-    private void preRemove() {
-        employees.forEach(employee -> {
-            Set<Task> tasks = employee.getWorkingTasks().stream()
-                    .filter(task -> !task.equals(this))
-                    .collect(Collectors.toSet());
-            employee.setWorkingTasks(tasks);
-        });
-    }
 }

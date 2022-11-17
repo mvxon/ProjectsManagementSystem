@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -97,7 +97,7 @@ class ProjectServiceTest {
     @Test
     void addTaskToProject() {
         final Task task = mock(Task.class);
-        final List<Task> tasks = new ArrayList<>();
+        final Set<Task> tasks = new HashSet<>();
         when(projectRepository.findById(ID)).thenReturn(Optional.of(project));
         when(taskService.getTaskById(ID)).thenReturn(task);
         when(project.getTasks()).thenReturn(tasks);
@@ -107,18 +107,6 @@ class ProjectServiceTest {
         assertEquals(1, tasks.size());
     }
 
-    @Test
-    void softDeleteProject_shouldCallRepositoryAndTaskService() {
-        final Project testProject = new Project();
-        testProject.setActive(true);
-        when(projectRepository.findById(ID)).thenReturn(Optional.of(testProject));
-
-        projectService.softDeleteProject(ID);
-
-        verify(taskService).softDeleteAllTasksByProjectId(ID);
-        verify(projectRepository).save(testProject);
-        assertFalse(testProject.isActive());
-    }
 
 
 
