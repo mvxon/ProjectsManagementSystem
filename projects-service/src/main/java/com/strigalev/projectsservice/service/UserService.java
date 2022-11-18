@@ -1,7 +1,6 @@
 package com.strigalev.projectsservice.service;
 
 import com.strigalev.projectsservice.domain.User;
-import com.strigalev.projectsservice.dto.EmployeeDTO;
 import com.strigalev.projectsservice.dto.SignUpRequest;
 import com.strigalev.starter.dto.UserDTO;
 import org.springframework.data.domain.Page;
@@ -24,21 +23,17 @@ public interface UserService {
 
     User getUserByEmail(String email);
 
-    Long getPrincipalId();
+    Page<UserDTO> getUsersPageByProjectId(Long projectId, Pageable pageable);
 
-    Page<EmployeeDTO> getUsersPageByProjectId(Long projectId, Pageable pageable);
+    Page<UserDTO> getUsersPageByTaskId(Long taskId, Pageable pageable);
 
-    Page<EmployeeDTO> getUsersPageByTaskId(Long taskId, Pageable pageable);
+    Page<UserDTO> getUsersPageByProjectName(String projectName, Pageable pageable);
 
-    Page<EmployeeDTO> getUsersPageByProjectName(String projectName, Pageable pageable);
-
-    EmployeeDTO getEmployeeDto(Long id);
+    UserDTO getUserDto(Long id);
 
     boolean isPrincipalHaveTask(Long taskId);
 
-    boolean isUserHaveTask(Long userId, Long taskId);
-
-    List<EmployeeDTO> getEmployeesDtoByFullName(String firstName, String lastName);
+    List<UserDTO> getUsersDtoByFullName(String firstName, String lastName);
 
 
 }

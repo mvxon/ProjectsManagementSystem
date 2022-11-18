@@ -4,9 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -25,9 +28,13 @@ public class Project {
     private String title;
     private String description;
     private String customer;
+
+    @CreationTimestamp
     private LocalDate creationDate;
     private LocalDate deadLineDate;
-    private LocalDate updateDate;
+
+    @UpdateTimestamp
+    private LocalDateTime updateDate;
 
     @Enumerated(EnumType.STRING)
     private ProjectStatus status;

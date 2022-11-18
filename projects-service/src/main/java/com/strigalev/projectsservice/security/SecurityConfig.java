@@ -75,12 +75,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasAnyAuthority(Role.TESTER.name(), Role.ADMIN.name(), Role.MANAGER.name())
 
                 .antMatchers(
-                        PATH_TASKS + "/open/**",
+                        PATH_TASKS + "/setOpen/**",
                         PATH_TASKS + "/assignToEmployee/**",
                         PATH_TASKS + "/setDocumented/**",
                         PATH_PROJECTS + "/addEmployee/**"
                 )
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
+
+                .antMatchers(PATH_TASKS + "/setDeveloping/**")
+                .hasAuthority(Role.DEVELOPER.name())
 
                 .anyRequest().authenticated()
                 .and()

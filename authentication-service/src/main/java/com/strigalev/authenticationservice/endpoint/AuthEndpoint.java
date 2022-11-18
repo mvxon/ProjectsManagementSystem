@@ -1,9 +1,8 @@
 package com.strigalev.authenticationservice.endpoint;
 
 import com.strigalev.authenticationservice.dto.SignInDTO;
-import com.strigalev.starter.dto.TokenDTO;
 import com.strigalev.authenticationservice.service.UserService;
-import com.strigalev.starter.dto.UserDTO;
+import com.strigalev.starter.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +31,7 @@ public class AuthEndpoint {
     }
 
     @GetMapping("/validateToken")
-    public UserDTO validateToken(@RequestParam(name = "token") String accessToken) {
+    public Long validateToken(@RequestParam(name = "token") String accessToken) {
         return userService.validateAccessToken(accessToken);
     }
 }

@@ -4,7 +4,7 @@ public enum TaskStatus {
     CREATED,
     OPEN,
     ASSIGNED,
-    IN_PROGRESS,
+    DEVELOPING,
     COMPLETED,
     TESTING,
     DOCUMENTED,

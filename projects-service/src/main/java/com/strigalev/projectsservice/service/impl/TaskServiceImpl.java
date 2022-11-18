@@ -2,6 +2,7 @@ package com.strigalev.projectsservice.service.impl;
 
 import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.TaskStatus;
+import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import com.strigalev.projectsservice.exception.InvalidStatusException;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 
 import static com.strigalev.starter.util.MethodsUtil.getTaskNotExistsMessage;
@@ -41,10 +43,10 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public void updateTask(TaskDTO taskDTO) {
         Task savedTask = getTaskById(taskDTO.getId());
         taskMapper.updateTaskFromDto(taskDTO, savedTask);
-        savedTask.setUpdateDate(LocalDate.now());
 
         taskRepository.save(savedTask);
     }
@@ -62,7 +64,6 @@ public class TaskServiceImpl implements TaskService {
     public void setTaskStatus(Long taskId, TaskStatus status) {
         Task task = getTaskById(taskId);
         task.setStatus(status);
-        task.setUpdateDate(LocalDate.now());
 
         taskRepository.save(task);
     }
@@ -71,15 +72,14 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public Long createTask(TaskDTO taskDTO) {
         Task task = taskMapper.map(taskDTO);
-        task.setCreationDate(LocalDate.now());
         task.setDeadLineDate(LocalDate.parse(taskDTO.getDeadLineDate()));
         task.setStatus(TaskStatus.CREATED);
-        taskRepository.save(task);
-        return task.getId();
+
+        return taskRepository.save(task).getId();
     }
 
     @Override
-    public Page<TaskDTO> getAllProjectTasksPage(Pageable pageable, Long projectId) {
+    public Page<TaskDTO> getTasksPageByProjectId(Pageable pageable, Long projectId) {
         Page<Task> tasks = taskRepository.findAllByProjectId(pageable, projectId);
         if (tasks.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
@@ -88,12 +88,49 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Page<TaskDTO> getProjectTasksPageByStatus(Pageable pageable, Long projectId, TaskStatus status) {
+    public Page<TaskDTO> getTasksPageByProjectIdAndStatus(Pageable pageable, Long projectId, TaskStatus status) {
         Page<Task> tasks = taskRepository.findAllByProjectIdAndStatus(pageable, projectId, status.name());
         if (tasks.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
         return tasks.map(taskListMapper::map);
+    }
+
+    @Override
+    public Page<TaskDTO> getTasksPageByProjectIdAndCreationDate(Pageable pageable, DateDTO dateDTO, Long projectId) {
+        Page<Task> tasks;
+        LocalDate searchingDate;
+
+        if (dateDTO.getYear() == null) {
+            throw new DateTimeException("INVALID DATE");
+        }
+
+        if (dateDTO.getMonth() == null && dateDTO.getDay() == null) { // by year
+            searchingDate = LocalDate.of(dateDTO.getYear(), 1, 1);
+            tasks = taskRepository.findAllByCreationDateBetweenAndProjectId(
+                    pageable,
+                    searchingDate,
+                    searchingDate.plusYears(1),
+                    projectId
+            );
+        } else if (dateDTO.getDay() == null) { // by month
+            searchingDate = LocalDate.of(dateDTO.getYear(), dateDTO.getMonth(), 1);
+            tasks = taskRepository.findAllByCreationDateBetweenAndProjectId(
+                    pageable,
+                    searchingDate,
+                    searchingDate.plusMonths(1),
+                    projectId
+            );
+        } else { // full date
+            searchingDate = LocalDate.of(dateDTO.getYear(), dateDTO.getMonth(), dateDTO.getDay());
+            tasks = taskRepository.findAllByCreationDateAndProjectId(pageable, searchingDate, projectId);
+        }
+
+        if (tasks.getContent().isEmpty()) {
+            throw new ResourceNotFoundException("Page not found");
+        }
+
+        return tasks.map(taskMapper::map);
     }
 
     @Override
@@ -133,8 +170,9 @@ public class TaskServiceImpl implements TaskService {
     public void unAssignTaskToUser(Long taskId, Long userId) {
         var task = getTaskById(taskId);
 
-        if (userService.isUserHaveTask(userId, taskId)) {
-            task.getEmployees().remove(userService.getUserById(userId));
+        if (!task.getEmployees().remove(userService.getUserById(userId))) {
+            throw new ResourceNotFoundException(String.format("User %oid don't have assigned task with %oid", userId,
+                    taskId));
         }
 
         if (task.getEmployees().isEmpty() && task.getStatus() == TaskStatus.ASSIGNED) {
@@ -151,7 +189,7 @@ public class TaskServiceImpl implements TaskService {
         TaskStatus status = getTaskById(taskId).getStatus();
 
         if (userService.isPrincipalHaveTask(taskId) && status == TaskStatus.ASSIGNED) {
-            setTaskStatus(taskId, TaskStatus.IN_PROGRESS);
+            setTaskStatus(taskId, TaskStatus.DEVELOPING);
         } else {
             throw new InvalidStatusException(String.format("Task with %oid is in %s status", taskId, status));
         }
@@ -163,7 +201,7 @@ public class TaskServiceImpl implements TaskService {
     public void setTaskCompleted(Long taskId) {
         TaskStatus status = getTaskById(taskId).getStatus();
 
-        if (userService.isPrincipalHaveTask(taskId) && status == TaskStatus.IN_PROGRESS) {
+        if (userService.isPrincipalHaveTask(taskId) && status == TaskStatus.DEVELOPING) {
             setTaskStatus(taskId, TaskStatus.COMPLETED);
         } else {
             throw new InvalidStatusException(String.format("Task with %oid is in %s status", taskId, status));

@@ -1,9 +1,9 @@
 package com.strigalev.projectsservice.endpoint;
 
 
-import com.strigalev.projectsservice.dto.EmployeeDTO;
 import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.dto.ApiResponseEntity;
+import com.strigalev.starter.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,22 +20,22 @@ public class EmployeeEndpoint {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseEntity> getEmployeeById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponseEntity.builder()
-                .object(userService.getEmployeeDto(id))
+                .object(userService.getUserDto(id))
                 .status(HttpStatus.OK)
                 .build());
     }
 
     @GetMapping("/byProjectId/{projectId}")
-    public ResponseEntity<Page<EmployeeDTO>> getEmployeesPageByProjectId(@PathVariable Long projectId, Pageable pageable) {
+    public ResponseEntity<Page<UserDTO>> getEmployeesByProjectId(@PathVariable Long projectId, Pageable pageable) {
         return ResponseEntity.ok(userService.getUsersPageByProjectId(projectId, pageable));
     }
 
     @GetMapping("/byProjectName/{projectName}")
-    public ResponseEntity<Page<EmployeeDTO>> getEmployeesPageByProjectName(@PathVariable String projectName, Pageable pageable) {
+    public ResponseEntity<Page<UserDTO>> getEmployeesByProjectName(@PathVariable String projectName, Pageable pageable) {
         return ResponseEntity.ok(userService.getUsersPageByProjectName(projectName, pageable));
     }
-    @GetMapping("/task/{taskId}")
-    public ResponseEntity<Page<EmployeeDTO>> getEmployeesPageByTaskId(@PathVariable Long taskId, Pageable pageable) {
+    @GetMapping("/byTaskId/{taskId}")
+    public ResponseEntity<Page<UserDTO>> getEmployeesByTaskId(@PathVariable Long taskId, Pageable pageable) {
         return ResponseEntity.ok(userService.getUsersPageByTaskId(taskId, pageable));
     }
 
@@ -45,7 +45,7 @@ public class EmployeeEndpoint {
             @RequestParam("lastName") String lastName
     ) {
         return ResponseEntity.ok(ApiResponseEntity.builder()
-                .object(userService.getEmployeesDtoByFullName(firstName, lastName))
+                .object(userService.getUsersDtoByFullName(firstName, lastName))
                 .status(HttpStatus.OK)
                 .build());
     }

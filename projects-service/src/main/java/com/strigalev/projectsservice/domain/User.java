@@ -5,12 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -32,15 +28,4 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-
-    /*@PreRemove
-    private void preRemove() {
-        workingProjects.forEach(project -> {
-            Set<User> employees = project.getEmployees().stream()
-                    .filter(employee -> !project.equals(this))
-                    .collect(Collectors.toSet());
-            employee.setWorkingProjects(projects);
-        });
-    }*/
 }

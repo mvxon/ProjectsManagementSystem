@@ -6,7 +6,6 @@ import com.strigalev.authenticationservice.jwt.service.JwtService;
 import com.strigalev.authenticationservice.jwt.service.JwtServiceImpl;
 import com.strigalev.authenticationservice.security.model.CustomUserDetails;
 import com.strigalev.starter.dto.TokenDTO;
-import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.starter.rabbit.RabbitMQService;
 import feign.FeignException;
 import org.springframework.context.annotation.Lazy;
@@ -84,12 +83,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO validateAccessToken(String token) {
+    public Long validateAccessToken(String token) {
         jwtService.validateAccessToken(token);
         CustomUserDetails user = loadUserByUsername(jwtService.getUserEmailFromAccessToken(token));
-        return UserDTO.builder()
-                .newAccessToken(jwtService.generateAccessToken(user))
-                .id(user.getId())
-                .build();
+        return user.getId();
     }
 }

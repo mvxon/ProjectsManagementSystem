@@ -1,7 +1,6 @@
 package com.strigalev.projectsservice.service.impl;
 
 import com.strigalev.projectsservice.domain.User;
-import com.strigalev.projectsservice.dto.EmployeeDTO;
 import com.strigalev.projectsservice.dto.SignUpRequest;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.UserMapper;
@@ -91,49 +90,48 @@ public class UserServiceImpl implements UserService {
                 );
     }
 
-    @Override
-    public Long getPrincipalId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = ((UserDTO) authentication.getPrincipal()).getEmail();
-        return getUserByEmail(email).getId();
-    }
 
     @Override
-    public Page<EmployeeDTO> getUsersPageByProjectId(Long projectId, Pageable pageable) {
+    public Page<UserDTO> getUsersPageByProjectId(Long projectId, Pageable pageable) {
         Page<User> users = userRepository.findAllByProjectId(pageable, projectId);
         if (users.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
-        return users.map(userMapper::mapToEmployeeDto);
+
+        return users.map(this::mapUser);
     }
 
     @Override
-    public Page<EmployeeDTO> getUsersPageByTaskId(Long taskId, Pageable pageable) {
+    public Page<UserDTO> getUsersPageByTaskId(Long taskId, Pageable pageable) {
         Page<User> users = userRepository.findAllByTaskId(pageable, taskId);
         if (users.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
-        return users.map(userMapper::mapToEmployeeDto);
+
+        return users.map(this::mapUser);
+    }
+
+    private UserDTO mapUser(User user) {
+        UserDTO mappedUser = userMapper.map(user);
+        mappedUser.setWorkingProjectsIds(userRepository.getProjectsIdsByUserId(mappedUser.getId()));
+        mappedUser.setWorkingTasksIds(userRepository.getTasksIdsByUserId(mappedUser.getId()));
+        return mappedUser;
     }
 
     @Override
-    public Page<EmployeeDTO> getUsersPageByProjectName(String projectName, Pageable pageable) {
+    public Page<UserDTO> getUsersPageByProjectName(String projectName, Pageable pageable) {
         return getUsersPageByProjectId(projectService.getProjectByName(projectName).getId(), pageable);
     }
 
     @Override
-    public EmployeeDTO getEmployeeDto(Long id) {
-        var mappedUser = userMapper.mapToEmployeeDto(getUserById(id));
-        mappedUser.setWorkingProjectsIds(userRepository.getProjectsIdsByUserId(id));
-        mappedUser.setWorkingTasksIds(userRepository.getTasksIdsByUserId(id));
-
-        return mappedUser;
+    public UserDTO getUserDto(Long id) {
+        return mapUser(getUserById(id));
     }
 
     @Override
     public boolean isPrincipalHaveTask(Long taskId) {
         Long principalId = getPrincipalId();
-        if (!getEmployeeWorkingTasksIds(principalId).contains(taskId)) {
+        if (!getUserWorkingTasksIds(principalId).contains(taskId)) {
             throw new ResourceNotFoundException(String.format("User %oid don't have assigned task with %oid", principalId,
                     taskId));
         }
@@ -141,37 +139,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean isUserHaveTask(Long userId, Long taskId) {
-        if (!getEmployeeWorkingTasksIds(userId).contains(taskId)) {
-            throw new ResourceNotFoundException(String.format("User %oid don't have assigned task with %oid", userId,
-                    taskId));
-        }
-        return true;
-    }
-
-    @Override
-    public List<EmployeeDTO> getEmployeesDtoByFullName(String firstName, String lastName) {
+    public List<UserDTO> getUsersDtoByFullName(String firstName, String lastName) {
         List<User> users = userRepository.findAllByFirstNameAndLastName(firstName, lastName);
+
         if (users.isEmpty()) {
             throw new ResourceNotFoundException(String.format("Users with first name: %s and last name: %s are not found",
                     firstName, lastName));
         }
 
-        return userMapper.mapListToEmployeeDto(userRepository.findAllByFirstNameAndLastName(firstName, lastName))
-                .stream()
-                .peek(mappedUser -> {
-                    mappedUser.setWorkingProjectsIds(userRepository.getProjectsIdsByUserId(mappedUser.getId()));
-                    mappedUser.setWorkingTasksIds(userRepository.getTasksIdsByUserId(mappedUser.getId()));
-                }).toList();
+        return users.stream()
+                .map(this::mapUser)
+                .toList();
     }
 
-
-    private List<Long> getEmployeeWorkingTasksIds(Long id) {
-        var tasksIds = userRepository.getTasksIdsByUserId(id);
+    private List<Long> getUserWorkingTasksIds(Long id) {
+        List<Long> tasksIds = userRepository.getTasksIdsByUserId(id);
         if (tasksIds.isEmpty()) {
             throw new ResourceNotFoundException(String.format("User with %oid don't have assigned tasks", id));
         }
         return tasksIds;
+    }
+
+    private Long getPrincipalId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = ((UserDTO) authentication.getPrincipal()).getEmail();
+        return getUserByEmail(email).getId();
     }
 
 }

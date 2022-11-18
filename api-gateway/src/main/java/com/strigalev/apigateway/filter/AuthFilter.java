@@ -1,6 +1,5 @@
 package com.strigalev.apigateway.filter;
 
-import com.strigalev.starter.dto.UserDTO;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -47,11 +46,11 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
             return webClientBuilder.build()
                     .get()
                     .uri("http://authentication-service/api/v1/auth/validateToken?token=" + parts[1])
-                    .retrieve().bodyToMono(UserDTO.class)
-                    .map(userDto -> {
+                    .retrieve().bodyToMono(Long.class)
+                    .map(id -> {
                                 exchange.getRequest()
                                         .mutate()
-                                        .header("X-auth-user-id", String.valueOf(userDto.getId()));
+                                        .header("X-auth-user-id", String.valueOf(id));
                                 return exchange;
                             }
                     )

@@ -1,6 +1,7 @@
 package com.strigalev.projectsservice.endpoint;
 
 import com.strigalev.projectsservice.domain.TaskStatus;
+import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.service.ProjectService;
@@ -55,15 +56,15 @@ public class TaskEndpoint {
             @ApiResponse(responseCode = "404", description = "NOT FOUND", content = @Content),
             @ApiResponse(responseCode = "500", description = "INTERNAL ERROR", content = @Content)
     })
-    public ResponseEntity<Page<TaskDTO>> getProjectTasksPage(@PathVariable Long projectId, Pageable pageable) {
+    public ResponseEntity<Page<TaskDTO>> getProjectTasks(@PathVariable Long projectId, Pageable pageable) {
         if (!projectService.isProjectWithIdExists(projectId)) {
             throw new ResourceNotFoundException(getProjectNotExistsMessage(projectId));
         }
-        return ResponseEntity.ok(taskService.getAllProjectTasksPage(pageable, projectId));
+        return ResponseEntity.ok(taskService.getTasksPageByProjectId(pageable, projectId));
     }
 
     @GetMapping("/byProjectId/{projectId}/byStatus")
-    public ResponseEntity<Page<TaskDTO>> getProjectTasksPageByStatus(
+    public ResponseEntity<Page<TaskDTO>> getProjectTasksByStatus(
             @PathVariable Long projectId,
             @RequestParam("status") String status,
             Pageable pageable
@@ -71,8 +72,17 @@ public class TaskEndpoint {
         if (!projectService.isProjectWithIdExists(projectId)) {
             throw new ResourceNotFoundException(getProjectNotExistsMessage(projectId));
         }
-        return ResponseEntity.ok(taskService.getProjectTasksPageByStatus(pageable, projectId,
+        return ResponseEntity.ok(taskService.getTasksPageByProjectIdAndStatus(pageable, projectId,
                 TaskStatus.valueOf(status.toUpperCase())));
+    }
+
+    @GetMapping("/byProjectId/{projectId}/byCreationDate")
+    public ResponseEntity<Page<TaskDTO>> getProjectTasks(
+            @PathVariable Long projectId,
+            @RequestBody @Valid DateDTO dateDTO,
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(taskService.getTasksPageByProjectIdAndCreationDate(pageable, dateDTO, projectId));
     }
 
     @PostMapping("/{projectId}")
@@ -130,13 +140,13 @@ public class TaskEndpoint {
         taskService.setTaskStatus(id, TaskStatus.valueOf(status.toUpperCase()));
     }
 
-    @PatchMapping("/open/{taskId}")
+    @PatchMapping("/setOpen/{taskId}")
     public void openTask(@PathVariable Long taskId) {
         taskService.openTask(taskId);
     }
 
     @PatchMapping("/assignToUser/{taskId}")
-    public void assignTaskToUser(@PathVariable Long taskId, @RequestParam("userId") Long userId) {
+    public void assignTaskToUser(@PathVariable Long taskId, @RequestParam(value = "userId") Long userId) {
         taskService.assignTaskToUser(taskId, userId);
     }
 
@@ -146,7 +156,7 @@ public class TaskEndpoint {
     }
 
 
-    @PatchMapping("/takeForDeveloping/{taskId}")
+    @PatchMapping("/setDeveloping/{taskId}")
     public ResponseEntity<ApiResponseEntity> takeTaskForDeveloping(@PathVariable Long taskId) {
         return ResponseEntity.ok(ApiResponseEntity.builder()
                 .object(taskService.takeTaskForDeveloping(taskId))
@@ -159,7 +169,7 @@ public class TaskEndpoint {
         taskService.setTaskCompleted(taskId);
     }
 
-    @PatchMapping("/takeForTesting/{taskId}")
+    @PatchMapping("/setTesting/{taskId}")
     public ResponseEntity<ApiResponseEntity> takeTaskForTesting(@PathVariable Long taskId) {
         return ResponseEntity.ok(ApiResponseEntity.builder()
                 .object(taskService.takeTaskForTesting(taskId))

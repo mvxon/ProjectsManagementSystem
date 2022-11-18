@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.DateTimeException;
+
 import static com.strigalev.starter.util.MethodsUtil.getBindingResultErrors;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -54,6 +56,15 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidStatusException.class)
     @ResponseStatus(BAD_REQUEST)
     protected ApiResponseEntity handleInvalidStatusException (InvalidStatusException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(BAD_REQUEST)
+                .build();
+    }
+
+    @ExceptionHandler(DateTimeException.class)
+    @ResponseStatus(BAD_REQUEST)
+    protected ApiResponseEntity handleDateTimeException(DateTimeException ex) {
         return ApiResponseEntity.builder()
                 .message(ex.getMessage())
                 .status(BAD_REQUEST)

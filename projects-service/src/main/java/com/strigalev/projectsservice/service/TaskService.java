@@ -3,6 +3,7 @@ package com.strigalev.projectsservice.service;
 
 import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.TaskStatus;
+import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +21,11 @@ public interface TaskService {
 
     void setTaskStatus(Long taskId, TaskStatus status);
 
-    Page<TaskDTO> getAllProjectTasksPage(Pageable pageable, Long projectId);
+    Page<TaskDTO> getTasksPageByProjectId(Pageable pageable, Long projectId);
 
-    Page<TaskDTO> getProjectTasksPageByStatus(Pageable pageable, Long projectId, TaskStatus status);
+    Page<TaskDTO> getTasksPageByProjectIdAndStatus(Pageable pageable, Long projectId, TaskStatus status);
+
+    Page<TaskDTO> getTasksPageByProjectIdAndCreationDate(Pageable pageable, DateDTO dateDTO, Long projectId);
 
     void openTask(Long taskId);
 

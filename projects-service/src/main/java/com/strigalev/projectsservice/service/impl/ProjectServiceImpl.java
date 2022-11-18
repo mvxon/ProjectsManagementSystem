@@ -56,7 +56,6 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public Long createProject(ProjectDTO projectDTO) {
         Project project = projectMapper.map(projectDTO);
-        project.setCreationDate(LocalDate.now());
         project.setDeadLineDate(LocalDate.parse(projectDTO.getDeadLineDate()));
         project.setStatus(ProjectStatus.CREATED);
 
@@ -77,7 +76,6 @@ public class ProjectServiceImpl implements ProjectService {
     public void setProjectStatus(Long projectId, ProjectStatus status) {
         Project project = getProjectById(projectId);
         project.setStatus(status);
-        project.setUpdateDate(LocalDate.now());
 
         projectRepository.save(project);
     }
@@ -98,7 +96,6 @@ public class ProjectServiceImpl implements ProjectService {
     public void updateProject(ProjectDTO projectDTO) {
         Project savedProject = getProjectById(projectDTO.getId());
         projectMapper.updateProjectFromDto(projectDTO, savedProject);
-        savedProject.setUpdateDate(LocalDate.now());
 
         projectRepository.save(savedProject);
     }
@@ -108,7 +105,6 @@ public class ProjectServiceImpl implements ProjectService {
     public void addTaskToProject(Long projectId, Long taskId) {
         Project project = getProjectById(projectId);
         project.getTasks().add(taskService.getTaskById(taskId));
-        project.setUpdateDate(LocalDate.now());
 
         projectRepository.save(project);
     }

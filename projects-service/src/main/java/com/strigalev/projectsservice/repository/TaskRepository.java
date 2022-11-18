@@ -4,20 +4,18 @@ import com.strigalev.projectsservice.domain.Task;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.time.LocalDate;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query(value = "SELECT * FROM tasks WHERE project_id = :id AND status = :status", nativeQuery = true)
-    Page<Task> findAllByProjectIdAndStatus(Pageable pageable, @Param("id") Long projectId, @Param("status") String status);
 
-    @Query(value = "SELECT * FROM tasks WHERE project_id = :id", nativeQuery = true)
-    Page<Task> findAllByProjectId(Pageable pageable, @Param("id") Long projectId);
+    Page<Task> findAllByProjectIdAndStatus(Pageable pageable, Long projectId, String status);
 
-    @Query(value = "SELECT task_id FROM tasks_employees WHERE employee_id = :id", nativeQuery = true)
-    List<Long> getTasksIdsByUserId(@Param("id") Long id);
+    Page<Task> findAllByProjectId(Pageable pageable, Long projectId);
+
+    Page<Task> findAllByCreationDateBetweenAndProjectId(Pageable pageable, LocalDate startDate, LocalDate endDate, Long projectId);
+
+    Page<Task> findAllByCreationDateAndProjectId(Pageable pageable, LocalDate creationDate, Long projectId);
 
 }

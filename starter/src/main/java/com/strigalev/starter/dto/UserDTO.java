@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,6 +17,9 @@ public class UserDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long id;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String password;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String firstName;
@@ -28,8 +33,8 @@ public class UserDTO {
     private Role role;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String newAccessToken;
+    private List<Long> workingProjectsIds;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String password;
+    private List<Long> workingTasksIds;
 }

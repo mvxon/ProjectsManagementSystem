@@ -38,12 +38,12 @@ public class ProjectEndpoint {
             @ApiResponse(responseCode = "404", description = "NOT FOUND", content = @Content),
             @ApiResponse(responseCode = "500", description = "INTERNAL ERROR", content = @Content)
     })
-    public ResponseEntity<Page<ProjectDTO>> getProjectsPage(Pageable pageable) {
+    public ResponseEntity<Page<ProjectDTO>> getProjects(Pageable pageable) {
         return new ResponseEntity<>(projectService.getAllProjectsPage(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/byStatus")
-    public ResponseEntity<Page<ProjectDTO>> getProjectsPageByStatus(
+    public ResponseEntity<Page<ProjectDTO>> getProjectsByStatus(
             @RequestParam("status") String status,
             Pageable pageable
     ) {
