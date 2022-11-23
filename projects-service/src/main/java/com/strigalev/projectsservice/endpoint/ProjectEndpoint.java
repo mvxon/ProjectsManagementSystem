@@ -81,6 +81,7 @@ public class ProjectEndpoint {
         return new ResponseEntity<>(
                 ApiResponseEntity.builder()
                         .object(projectService.createProject(projectDTO))
+                        .status(CREATED)
                         .build(),
                 CREATED
         );
@@ -114,8 +115,8 @@ public class ProjectEndpoint {
         projectService.setProjectStatus(id, ProjectStatus.valueOf(status.toUpperCase()));
     }
 
-    @PatchMapping("/addEmployee/{id}")
+    @PatchMapping("/addUser/{id}")
     public void addUserToProject(@PathVariable Long id, @RequestParam("userId") Long userId) {
-        projectService.addEmployeeToProject(id, userId);
+        projectService.addUserToProject(id, userId);
     }
 }

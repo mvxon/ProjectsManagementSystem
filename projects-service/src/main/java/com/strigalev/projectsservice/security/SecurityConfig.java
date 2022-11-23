@@ -71,7 +71,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.PUT, PATH_TASKS + "/**")
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
 
-                .antMatchers(PATH_TASKS + "/takeForTesting/**")
+                .antMatchers(PATH_TASKS + "/setTesting/**")
                 .hasAnyAuthority(Role.TESTER.name(), Role.ADMIN.name(), Role.MANAGER.name())
 
                 .antMatchers(
@@ -83,7 +83,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasAnyAuthority(Role.ADMIN.name(), Role.MANAGER.name())
 
                 .antMatchers(PATH_TASKS + "/setDeveloping/**")
-                .hasAuthority(Role.DEVELOPER.name())
+                .hasAnyAuthority(Role.DEVELOPER.name(), Role.MANAGER.name(), Role.ADMIN.name())
 
                 .anyRequest().authenticated()
                 .and()

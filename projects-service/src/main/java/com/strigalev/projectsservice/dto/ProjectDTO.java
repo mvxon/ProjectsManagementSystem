@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -21,7 +22,7 @@ public class ProjectDTO {
 
     private Long id;
 
-    private ProjectStatus status;
+    private Set<ProjectStatus> statuses;
 
     @ProjectName
     @NotEmpty(message = "Name should not be empty")

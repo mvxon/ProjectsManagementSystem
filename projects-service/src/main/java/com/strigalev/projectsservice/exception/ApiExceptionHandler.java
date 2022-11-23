@@ -70,4 +70,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(BAD_REQUEST)
                 .build();
     }
+
+    @ExceptionHandler(EmployeeException.class)
+    @ResponseStatus(BAD_REQUEST)
+    protected ApiResponseEntity handleEmployeeException(EmployeeException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(BAD_REQUEST)
+                .build();
+    }
 }

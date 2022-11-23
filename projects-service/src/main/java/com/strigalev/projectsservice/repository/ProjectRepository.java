@@ -2,6 +2,8 @@ package com.strigalev.projectsservice.repository;
 
 import com.strigalev.projectsservice.domain.Project;
 import com.strigalev.projectsservice.domain.ProjectStatus;
+import com.strigalev.projectsservice.domain.Task;
+import com.strigalev.projectsservice.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +14,12 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     boolean existsByName(String projectName);
 
-    Page<Project> findAllByStatus(Pageable pageable, ProjectStatus status);
+    boolean existsByTasksContainingAndEmployeesContaining(Task task, User employee);
 
-    Optional<Project> findByName(String name);
+    Page<Project> findAllByStatusesContainingAndDeletedIsFalse(Pageable pageable, ProjectStatus status);
+
+    Optional<Project> findByNameAndDeletedIsFalse(String name);
+
+    Optional<Project> findByIdAndDeletedIsFalse(Long id);
+
 }

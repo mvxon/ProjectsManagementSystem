@@ -36,12 +36,17 @@ public class Project {
     @UpdateTimestamp
     private LocalDateTime updateDate;
 
+    @ElementCollection(targetClass = ProjectStatus.class, fetch = FetchType.LAZY)
+    @CollectionTable(name = "projects_statuses")
     @Enumerated(EnumType.STRING)
-    private ProjectStatus status;
+    private Set<ProjectStatus> statuses;
+
+    private boolean deleted;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "project_id")
     Set<Task> tasks;
+
 
     @ManyToMany(
             fetch = FetchType.LAZY,

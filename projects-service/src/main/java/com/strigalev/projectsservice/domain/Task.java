@@ -36,8 +36,12 @@ public class Task {
     @UpdateTimestamp
     private LocalDateTime updateDate;
 
+    @ElementCollection(targetClass = TaskStatus.class, fetch = FetchType.LAZY)
+    @CollectionTable(name = "tasks_statuses")
     @Enumerated(EnumType.STRING)
-    private TaskStatus status;
+    private Set<TaskStatus> statuses;
+
+    private boolean deleted;
 
     @ManyToMany(
             fetch = FetchType.LAZY,

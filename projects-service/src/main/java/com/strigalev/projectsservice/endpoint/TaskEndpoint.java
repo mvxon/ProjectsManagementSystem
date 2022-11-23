@@ -102,8 +102,7 @@ public class TaskEndpoint {
         if (!projectService.isProjectWithIdExists(projectId)) {
             throw new ResourceNotFoundException(getProjectNotExistsMessage(projectId));
         }
-        Long taskId = taskService.createTask(taskDTO);
-        projectService.addTaskToProject(projectId, taskId);
+        Long taskId = taskService.createTaskInProject(taskDTO, projectId);
         return new ResponseEntity<>(
                 ApiResponseEntity.builder()
                         .object(taskId)
@@ -159,7 +158,7 @@ public class TaskEndpoint {
     @PatchMapping("/setDeveloping/{taskId}")
     public ResponseEntity<ApiResponseEntity> takeTaskForDeveloping(@PathVariable Long taskId) {
         return ResponseEntity.ok(ApiResponseEntity.builder()
-                .object(taskService.takeTaskForDeveloping(taskId))
+                .object(taskService.setTaskDeveloping(taskId))
                 .status(HttpStatus.OK)
                 .build());
     }
@@ -172,7 +171,7 @@ public class TaskEndpoint {
     @PatchMapping("/setTesting/{taskId}")
     public ResponseEntity<ApiResponseEntity> takeTaskForTesting(@PathVariable Long taskId) {
         return ResponseEntity.ok(ApiResponseEntity.builder()
-                .object(taskService.takeTaskForTesting(taskId))
+                .object(taskService.setTaskTesting(taskId))
                 .status(HttpStatus.OK)
                 .build());
     }

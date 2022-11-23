@@ -2,6 +2,8 @@ package com.strigalev.projectsservice.service;
 
 import com.strigalev.projectsservice.domain.Project;
 import com.strigalev.projectsservice.domain.ProjectStatus;
+import com.strigalev.projectsservice.domain.Task;
+import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,11 +29,11 @@ public interface ProjectService {
 
     void updateProject(ProjectDTO projectDTO);
 
-    void addTaskToProject(Long projectId, Long taskId);
-
     Page<ProjectDTO> getAllProjectsPage(Pageable pageable);
 
-    void addEmployeeToProject(Long projectId, Long userId);
+    void addUserToProject(Long projectId, Long userId);
+
+    boolean isUserAndTaskMatchesOnProject(Task task, User user);
 
     Page<ProjectDTO> getProjectsPageByStatus(ProjectStatus status, Pageable pageable);
 

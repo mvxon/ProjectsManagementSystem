@@ -1,40 +1,33 @@
-package com.strigalev.starter.dto;
+package com.strigalev.projectsservice.dto;
+
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.strigalev.starter.model.Role;
-import com.strigalev.starter.model.UserAction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class AuditDTO {
+public class UserStatisticDTO {
+    private Long userId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String id;
-
-    private UserAction action;
-    private LocalDateTime date;
     private String userEmail;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long actionedUserId;
+    private Integer completedTasksCount;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Role userRole;
+    private Double completionRate; // tasks/day
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long projectId;
+    private List<CompletedTaskDTO> completedTasksStatistic;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long taskId;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private LocalDateTime dateOfDevStart;
+    private String message;
 }

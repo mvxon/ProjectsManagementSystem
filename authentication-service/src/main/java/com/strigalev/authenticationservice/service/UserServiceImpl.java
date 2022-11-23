@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+import static com.strigalev.starter.model.UserAction.LOGIN;
+import static com.strigalev.starter.model.UserAction.LOGOUT;
+
 @Service
 public class UserServiceImpl implements UserService {
     private final FeignClientService feignClientService;
@@ -55,7 +58,9 @@ public class UserServiceImpl implements UserService {
             ));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            rabbitMQService.sendAuditMessage("LOGIN", LocalDateTime.now(), user.getEmail());
+
+            rabbitMQService.sendAuthAuditMessage(LOGIN, LocalDateTime.now(), user.getEmail());
+
             return jwtService.generateTokensPair(user);
         } catch (BadCredentialsException e) {
             SecurityContextHolder.getContext().setAuthentication(null);
@@ -66,9 +71,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logout(String refreshToken) {
         jwtService.validateAndDeleteRefreshToken(refreshToken);
-        rabbitMQService.sendAuditMessage(
-                "LOGOUT",
-                LocalDateTime.now(),
+
+        rabbitMQService.sendAuthAuditMessage(LOGOUT, LocalDateTime.now(),
                 jwtService.getUserEmailFromRefreshToken(refreshToken)
         );
     }

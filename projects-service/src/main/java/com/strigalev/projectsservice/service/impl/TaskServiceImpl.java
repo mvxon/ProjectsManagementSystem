@@ -2,15 +2,19 @@ package com.strigalev.projectsservice.service.impl;
 
 import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.TaskStatus;
+import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
+import com.strigalev.projectsservice.exception.EmployeeException;
 import com.strigalev.projectsservice.exception.InvalidStatusException;
 import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.TaskListMapper;
 import com.strigalev.projectsservice.mapper.TaskMapper;
 import com.strigalev.projectsservice.repository.TaskRepository;
+import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
 import com.strigalev.projectsservice.service.UserService;
+import com.strigalev.starter.model.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.Set;
 
+import static com.strigalev.projectsservice.domain.TaskStatus.*;
+import static com.strigalev.starter.model.Role.DEVELOPER;
+import static com.strigalev.starter.model.Role.TESTER;
+import static com.strigalev.starter.model.UserAction.*;
 import static com.strigalev.starter.util.MethodsUtil.getTaskNotExistsMessage;
 
 @Service
@@ -29,10 +38,11 @@ public class TaskServiceImpl implements TaskService {
     private final TaskListMapper taskListMapper;
     private final TaskRepository taskRepository;
     private final UserService userService;
+    private final ProjectService projectService;
 
     @Override
     public Task getTaskById(Long id) {
-        return taskRepository.findById(id).orElseThrow(
+        return taskRepository.findTaskByIdAndDeletedIsFalse(id).orElseThrow(
                 () -> new ResourceNotFoundException(getTaskNotExistsMessage(id))
         );
     }
@@ -48,39 +58,45 @@ public class TaskServiceImpl implements TaskService {
         Task savedTask = getTaskById(taskDTO.getId());
         taskMapper.updateTaskFromDto(taskDTO, savedTask);
 
-        taskRepository.save(savedTask);
+        userService.sendUserTaskAction(UPDATE_TASK, taskRepository.save(savedTask).getId());
     }
 
     @Override
     @Transactional
     public void deleteTask(Long id) {
         Task task = getTaskById(id);
-        task.setStatus(TaskStatus.DELETED);
+        task.setDeleted(true);
         task.getEmployees().clear();
+
+        userService.sendUserTaskAction(DELETE_TASK, taskRepository.save(task).getId());
     }
 
     @Override
     @Transactional
     public void setTaskStatus(Long taskId, TaskStatus status) {
         Task task = getTaskById(taskId);
-        task.setStatus(status);
+        task.getStatuses().add(status);
 
         taskRepository.save(task);
     }
 
     @Override
     @Transactional
-    public Long createTask(TaskDTO taskDTO) {
+    public Long createTaskInProject(TaskDTO taskDTO, Long projectId) {
         Task task = taskMapper.map(taskDTO);
         task.setDeadLineDate(LocalDate.parse(taskDTO.getDeadLineDate()));
-        task.setStatus(TaskStatus.CREATED);
+        task.setStatuses(Set.of(TaskStatus.CREATED));
+        task.setProjectId(projectId);
 
-        return taskRepository.save(task).getId();
+        userService.sendManagerAction(ADD_TASK_TO_PROJECT, projectId, taskRepository.save(task).getId(),
+                null);
+
+        return task.getId();
     }
 
     @Override
     public Page<TaskDTO> getTasksPageByProjectId(Pageable pageable, Long projectId) {
-        Page<Task> tasks = taskRepository.findAllByProjectId(pageable, projectId);
+        Page<Task> tasks = taskRepository.findAllByProjectIdAndDeletedIsFalse(pageable, projectId);
         if (tasks.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
@@ -89,7 +105,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Page<TaskDTO> getTasksPageByProjectIdAndStatus(Pageable pageable, Long projectId, TaskStatus status) {
-        Page<Task> tasks = taskRepository.findAllByProjectIdAndStatus(pageable, projectId, status.name());
+        Page<Task> tasks =
+                taskRepository.findAllByProjectIdAndStatusesContainingAndDeletedIsFalse(pageable, projectId, status);
         if (tasks.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
@@ -107,7 +124,7 @@ public class TaskServiceImpl implements TaskService {
 
         if (dateDTO.getMonth() == null && dateDTO.getDay() == null) { // by year
             searchingDate = LocalDate.of(dateDTO.getYear(), 1, 1);
-            tasks = taskRepository.findAllByCreationDateBetweenAndProjectId(
+            tasks = taskRepository.findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(
                     pageable,
                     searchingDate,
                     searchingDate.plusYears(1),
@@ -115,7 +132,7 @@ public class TaskServiceImpl implements TaskService {
             );
         } else if (dateDTO.getDay() == null) { // by month
             searchingDate = LocalDate.of(dateDTO.getYear(), dateDTO.getMonth(), 1);
-            tasks = taskRepository.findAllByCreationDateBetweenAndProjectId(
+            tasks = taskRepository.findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(
                     pageable,
                     searchingDate,
                     searchingDate.plusMonths(1),
@@ -123,7 +140,11 @@ public class TaskServiceImpl implements TaskService {
             );
         } else { // full date
             searchingDate = LocalDate.of(dateDTO.getYear(), dateDTO.getMonth(), dateDTO.getDay());
-            tasks = taskRepository.findAllByCreationDateAndProjectId(pageable, searchingDate, projectId);
+            tasks = taskRepository.findAllByCreationDateAndProjectIdAndDeletedIsFalse(
+                    pageable,
+                    searchingDate,
+                    projectId
+            );
         }
 
         if (tasks.getContent().isEmpty()) {
@@ -136,47 +157,72 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public void openTask(Long taskId) {
-        Task task = getTaskById(taskId);
-        if (task.getStatus() == TaskStatus.CREATED) {
-            setTaskStatus(taskId, TaskStatus.OPEN);
-        } else {
-            throw new InvalidStatusException(String.format("Task with %oid is in " +
-                    task.getStatus() + " status", taskId));
+        Set<TaskStatus> statuses = getTaskById(taskId).getStatuses();
+        if (statuses.contains(CREATED)) {
+            setTaskStatus(taskId, OPEN);
+            userService.sendUserTaskAction(OPEN_TASK, taskId);
+            return;
         }
+        throw new InvalidStatusException(String.format("Task with %oid is already in %s statuses", taskId, statuses));
     }
 
     @Override
     @Transactional
     public void assignTaskToUser(Long taskId, Long userId) {
-        var task = getTaskById(taskId);
-        TaskStatus taskStatus = task.getStatus();
-        if (taskStatus == TaskStatus.CREATED || taskStatus == TaskStatus.DOCUMENTED) {
-            throw new InvalidStatusException(String.format("Task with %oid is in " +
-                    taskStatus + " status", taskId));
+        Task task = getTaskById(taskId);
+        User user = userService.getUserById(userId);
+        Set<TaskStatus> statuses = task.getStatuses();
+        Set<User> employees = task.getEmployees();
+
+        if (statuses.size() > ASSIGNED.ordinal() + 1) {
+            throw new InvalidStatusException(String.format("Task with %oid is already in %s statuses", taskId,
+                    statuses));
         }
 
-        if (!task.getEmployees().add(userService.getUserById(userId))) {
-            throw new InvalidStatusException(
-                    String.format("User with %oid is already assigned with " + taskId + "id task", userId));
+        if (projectService.isUserAndTaskMatchesOnProject(task, user) && !isTaskHasUserWithRole(task, user.getRole())) {
+            if (!employees.add(user)) {
+                throw new InvalidStatusException(
+                        String.format("User with %oid is already assigned with %oid task", userId, taskId));
+            }
+        } else {
+            throw new EmployeeException(String.format("User with %s role is already assigned with %oid task",
+                    DEVELOPER, taskId));
         }
-        if (taskStatus == TaskStatus.OPEN) {
-            task.setStatus(TaskStatus.ASSIGNED);
+
+        userService.sendManagerAction(ASSIGN_TASK_TO_USER, null, taskId, userId);
+
+        if (!statuses.isEmpty()) {
+            statuses.add(ASSIGNED);
         }
+
         taskRepository.save(task);
+    }
+
+    private boolean isTaskHasUserWithRole(Task task, Role role) {
+        return task.getEmployees().stream().anyMatch(user -> user.getRole() == role);
     }
 
     @Override
     @Transactional
     public void unAssignTaskToUser(Long taskId, Long userId) {
-        var task = getTaskById(taskId);
+        Task task = getTaskById(taskId);
+        User user = userService.getUserById(userId);
+        Set<TaskStatus> statuses = task.getStatuses();
 
-        if (!task.getEmployees().remove(userService.getUserById(userId))) {
-            throw new ResourceNotFoundException(String.format("User %oid don't have assigned task with %oid", userId,
+        if (statuses.contains(DEVELOPING)) {
+            throw new InvalidStatusException(String.format("Task with %oid is already in %s statuses",
+                    taskId,
+                    statuses));
+        }
+        if (!task.getEmployees().remove(user)) {
+            throw new EmployeeException(String.format("User %oid don't have assigned task with %oid", userId,
                     taskId));
         }
 
-        if (task.getEmployees().isEmpty() && task.getStatus() == TaskStatus.ASSIGNED) {
-            task.setStatus(TaskStatus.OPEN);
+        userService.sendManagerAction(UNASSIGN_TASK_TO_USER, null, taskId, userId);
+
+        if (task.getEmployees().isEmpty()) {
+            statuses.remove(ASSIGNED);
         }
 
         taskRepository.save(task);
@@ -185,52 +231,92 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public TaskDTO takeTaskForDeveloping(Long taskId) {
-        TaskStatus status = getTaskById(taskId).getStatus();
+    public TaskDTO setTaskDeveloping(Long taskId) {
+        Task task = getTaskById(taskId);
+        Set<TaskStatus> statuses = task.getStatuses();
 
-        if (userService.isPrincipalHaveTask(taskId) && status == TaskStatus.ASSIGNED) {
-            setTaskStatus(taskId, TaskStatus.DEVELOPING);
+        if (isTaskHasUserWithRole(task, DEVELOPER)) {
+            if (userService.isPrincipalHaveTask(taskId)) {
+                if (statuses.size() == DEVELOPING.ordinal()) {
+                    setTaskStatus(taskId, TaskStatus.DEVELOPING);
+
+                    userService.sendUserTaskAction(TAKE_TASK_FOR_DEVELOPING, taskId);
+
+                    return getTaskDtoById(taskId);
+                }
+            }
         } else {
-            throw new InvalidStatusException(String.format("Task with %oid is in %s status", taskId, status));
+            throw new EmployeeException(String.format("Task with %oid does not have user with role %s", taskId, DEVELOPER));
         }
-        return getTaskDtoById(taskId);
+        throw new InvalidStatusException(String.format("Task with %oid is already in %s statuses", taskId, statuses));
     }
 
     @Override
     @Transactional
     public void setTaskCompleted(Long taskId) {
-        TaskStatus status = getTaskById(taskId).getStatus();
+        Set<TaskStatus> statuses = getTaskById(taskId).getStatuses();
 
-        if (userService.isPrincipalHaveTask(taskId) && status == TaskStatus.DEVELOPING) {
-            setTaskStatus(taskId, TaskStatus.COMPLETED);
-        } else {
-            throw new InvalidStatusException(String.format("Task with %oid is in %s status", taskId, status));
+        if (userService.isPrincipalHaveTask(taskId)) {
+            if (statuses.contains(DEVELOPING)) {
+                setTaskStatus(taskId, COMPLETED);
+
+                userService.sendUserTaskAction(COMPLETED_TASK, taskId);
+            }
         }
+        throw new InvalidStatusException(String.format("Task with %oid is already in %s statuses", taskId, statuses));
     }
 
     @Override
     @Transactional
-    public TaskDTO takeTaskForTesting(Long taskId) {
-        if (userService.isPrincipalHaveTask(taskId)
-                && getTaskById(taskId).getStatus() == TaskStatus.COMPLETED) {
-            setTaskStatus(taskId, TaskStatus.TESTING);
-        } else {
-            throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId,
-                    TaskStatus.COMPLETED));
+    public TaskDTO setTaskTesting(Long taskId) {
+        Task task = getTaskById(taskId);
+        Set<TaskStatus> statuses = task.getStatuses();
+
+        if (isTaskHasUserWithRole(task, TESTER)) {
+            if (userService.isPrincipalHaveTask(taskId)) {
+                if (statuses.contains(COMPLETED)) {
+                    setTaskStatus(taskId, TESTING);
+
+                    userService.sendUserTaskAction(SET_TASK_TESTING, taskId);
+
+                    return getTaskDtoById(taskId);
+                }
+            }
         }
-        return getTaskDtoById(taskId);
+        throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId, COMPLETED));
+    }
+
+    @Override
+    @Transactional
+    public void setTaskTested(Long taskId) {
+        Task task = getTaskById(taskId);
+        Set<TaskStatus> statuses = task.getStatuses();
+
+        if (userService.isPrincipalHaveTask(taskId)) {
+            if (statuses.contains(TESTING)) {
+                setTaskStatus(taskId, TESTED);
+
+                userService.sendUserTaskAction(COMPLETED_TASK_TESTING, taskId);
+            }
+        }
+        throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId, TESTING));
     }
 
     @Override
     @Transactional
     public void setTaskDocumented(Long taskId) {
-        Task task = getTaskById(taskId);
+        Set<TaskStatus> statuses = getTaskById(taskId).getStatuses();
 
-        if (task.getStatus() != TaskStatus.TESTING) {
-            throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId,
-                    TaskStatus.TESTING));
+        if (userService.isPrincipalHaveTask(taskId)) {
+            if (statuses.contains(TESTING)) {
+                setTaskStatus(taskId, DOCUMENTED);
+
+                userService.sendUserTaskAction(SET_TASK_DOCUMENTED, taskId);
+
+                return;
+            }
         }
-        setTaskStatus(taskId, TaskStatus.DOCUMENTED);
+        throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId, COMPLETED));
     }
 
 }

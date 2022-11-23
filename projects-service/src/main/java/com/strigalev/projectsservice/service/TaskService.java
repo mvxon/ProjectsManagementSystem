@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface TaskService {
-    Long createTask(TaskDTO taskDTO);
+    Long createTaskInProject(TaskDTO taskDTO, Long projectId);
 
     Task getTaskById(Long id);
 
@@ -33,11 +33,12 @@ public interface TaskService {
 
     void unAssignTaskToUser(Long taskId, Long userId);
 
-    TaskDTO takeTaskForDeveloping(Long taskId);
+    TaskDTO setTaskDeveloping(Long taskId);
 
     void setTaskCompleted(Long taskId);
 
-    TaskDTO takeTaskForTesting(Long taskId);
+    TaskDTO setTaskTesting(Long taskId);
 
+    void setTaskTested(Long taskId);
     void setTaskDocumented(Long taskId);
 }

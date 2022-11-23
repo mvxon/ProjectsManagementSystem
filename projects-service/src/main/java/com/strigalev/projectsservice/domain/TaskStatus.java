@@ -7,6 +7,7 @@ public enum TaskStatus {
     DEVELOPING,
     COMPLETED,
     TESTING,
+    TESTED,
     DOCUMENTED,
-    DELETED
+    ARCHIVED,
 }

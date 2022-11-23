@@ -1,6 +1,8 @@
 package com.strigalev.starter.rabbit;
 
 import com.strigalev.starter.dto.AuditDTO;
+import com.strigalev.starter.model.Role;
+import com.strigalev.starter.model.UserAction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +22,7 @@ public class RabbitMQService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void sendAuditMessage(String action, LocalDateTime date, String userEmail) {
+    public void sendAuthAuditMessage(UserAction action, LocalDateTime date, String userEmail) {
         rabbitTemplate.convertAndSend(
                 exchange,
                 routingKey,
@@ -28,6 +30,30 @@ public class RabbitMQService {
                         .action(action)
                         .date(date)
                         .userEmail(userEmail)
+                        .build()
+        );
+    }
+
+    public void sendAuditMessage(
+            UserAction action,
+            LocalDateTime date,
+            String userEmail,
+            Role role,
+            Long projectId,
+            Long taskId,
+            Long actionedUserId
+    ) {
+        rabbitTemplate.convertAndSend(
+                exchange,
+                routingKey,
+                AuditDTO.builder()
+                        .action(action)
+                        .userRole(role)
+                        .projectId(projectId)
+                        .taskId(taskId)
+                        .date(date)
+                        .userEmail(userEmail)
+                        .actionedUserId(actionedUserId)
                         .build()
         );
     }

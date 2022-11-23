@@ -56,18 +56,6 @@ class TaskEndpointTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.creationDate").value(CREATION_DATE));
     }
 
-    @Test
-    void createTaskInProject() throws Exception {
-        when(projectService.isProjectWithIdExists(ID)).thenReturn(true);
-        when(taskService.createTask(TASK_DTO)).thenReturn(ID);
-
-        mockMvc.perform(MockMvcRequestBuilders.post(PATH + "/" + ID)
-                        .content(new ObjectMapper().writeValueAsString(TASK_DTO))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.objectId").value(ID));
-        verify(projectService).addTaskToProject(ID, ID);
-    }
 
     @Test
     void createTaskInProject_whenProjectNotExists() throws Exception {
@@ -78,17 +66,6 @@ class TaskEndpointTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(getProjectNotExistsMessage(ID)));
-    }
-
-    @Test
-    void createTask_whenInvalidRequestBody() throws Exception {
-        when(taskService.createTask(TASK_DTO)).thenReturn(ID);
-
-        mockMvc.perform(MockMvcRequestBuilders.post(PATH + "/" + ID)
-                        .content(new ObjectMapper().writeValueAsString(new TaskDTO()))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
-                .andExpect(status().isBadRequest());
     }
 
 
