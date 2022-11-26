@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Set;
 
+import static com.strigalev.projectsservice.domain.ProjectStatus.CREATED;
 import static com.strigalev.starter.model.UserAction.*;
 import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
 import static com.strigalev.starter.util.MethodsUtil.getProjectWithNameNotExistsMessage;
@@ -60,7 +60,7 @@ public class ProjectServiceImpl implements ProjectService {
     public Long createProject(ProjectDTO projectDTO) {
         Project project = projectMapper.map(projectDTO);
         project.setDeadLineDate(LocalDate.parse(projectDTO.getDeadLineDate()));
-        project.setStatuses(Set.of(ProjectStatus.CREATED));
+        project.setStatus(CREATED);
 
         userService.sendUserProjectAction(CREATE_PROJECT, projectRepository.save(project).getId());
 
@@ -85,7 +85,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public void setProjectStatus(Long projectId, ProjectStatus status) {
         Project project = getProjectById(projectId);
-        project.getStatuses().add(status);
+        project.setStatus(status);
 
         projectRepository.save(project);
     }
@@ -146,7 +146,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Page<ProjectDTO> getProjectsPageByStatus(ProjectStatus status, Pageable pageable) {
-        Page<Project> projects = projectRepository.findAllByStatusesContainingAndDeletedIsFalse(pageable, status);
+        Page<Project> projects = projectRepository.findAllByStatusAndDeletedIsFalse(pageable, status);
         if (projects.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }

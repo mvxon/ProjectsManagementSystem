@@ -36,10 +36,8 @@ public class Project {
     @UpdateTimestamp
     private LocalDateTime updateDate;
 
-    @ElementCollection(targetClass = ProjectStatus.class, fetch = FetchType.LAZY)
-    @CollectionTable(name = "projects_statuses")
     @Enumerated(EnumType.STRING)
-    private Set<ProjectStatus> statuses;
+    private ProjectStatus status;
 
     private boolean deleted;
 

@@ -2,9 +2,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8081/eureka
+
 spring:
   application:
     name: projects-service
+
   data:
     web:
       sort:
@@ -12,6 +14,7 @@ spring:
       pageable:
         default-page-size: 5
         max-page-size: 20
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -20,8 +23,10 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/projects_management}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:1}
+
   flyway:
     baseline-on-migrate: true
+
   rabbitmq:
     host: localhost
     password: guest
@@ -31,9 +36,25 @@ spring:
     routing-key: projects.routingKey
     queue: projects.queue
 
+  quartz:
+    job-store-type: jdbc
+    properties.org.quartz:
+          threadPool:
+            threadCount: 5
+    properties:
+      org:
+        quartz:
+          jobStore:
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+
+
 application:
   title: Projects Management Application
   description: Application for projects and tasks managing
   version: 1.0
+  tasks:
+    archiving-period-days: 3
 server:
   port: 0
+
+

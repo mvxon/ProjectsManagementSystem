@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -18,7 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Task {
+public class Task implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,10 +37,8 @@ public class Task {
     @UpdateTimestamp
     private LocalDateTime updateDate;
 
-    @ElementCollection(targetClass = TaskStatus.class, fetch = FetchType.LAZY)
-    @CollectionTable(name = "tasks_statuses")
     @Enumerated(EnumType.STRING)
-    private Set<TaskStatus> statuses;
+    private TaskStatus status;
 
     private boolean deleted;
 

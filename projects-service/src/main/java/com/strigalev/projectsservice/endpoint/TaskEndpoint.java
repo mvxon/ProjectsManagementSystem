@@ -176,6 +176,11 @@ public class TaskEndpoint {
                 .build());
     }
 
+    @PatchMapping("/setTested/{taskId}")
+    public void setTaskTested(@PathVariable Long taskId) {
+        taskService.setTaskTested(taskId);
+    }
+
     @PatchMapping("/setDocumented/{taskId}")
     public void setTaskDocumented(@PathVariable Long taskId) {
         taskService.setTaskDocumented(taskId);

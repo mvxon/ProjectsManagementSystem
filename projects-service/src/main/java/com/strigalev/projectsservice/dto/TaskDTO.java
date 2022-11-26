@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +19,7 @@ public class TaskDTO {
 
     private Long id;
 
-    private Set<TaskStatus> statuses;
+    private TaskStatus status;
 
     @NotEmpty(message = "Title should not be empty")
     @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -16,7 +16,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     boolean existsByTasksContainingAndEmployeesContaining(Task task, User employee);
 
-    Page<Project> findAllByStatusesContainingAndDeletedIsFalse(Pageable pageable, ProjectStatus status);
+    Page<Project> findAllByStatusAndDeletedIsFalse(Pageable pageable, ProjectStatus status);
 
     Optional<Project> findByNameAndDeletedIsFalse(String name);
 

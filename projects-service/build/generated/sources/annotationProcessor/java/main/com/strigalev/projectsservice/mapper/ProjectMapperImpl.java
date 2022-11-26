@@ -1,18 +1,15 @@
 package com.strigalev.projectsservice.mapper;
 
 import com.strigalev.projectsservice.domain.Project;
-import com.strigalev.projectsservice.domain.ProjectStatus;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-11-23T17:10:25+0300",
+    date = "2022-11-26T18:24:37+0300",
     comments = "version: 1.5.3.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-7.5.1.jar, environment: Java 17.0.4.1 (Amazon.com Inc.)"
 )
 @Component
@@ -27,10 +24,6 @@ public class ProjectMapperImpl implements ProjectMapper {
         ProjectDTO.ProjectDTOBuilder projectDTO = ProjectDTO.builder();
 
         projectDTO.id( project.getId() );
-        Set<ProjectStatus> set = project.getStatuses();
-        if ( set != null ) {
-            projectDTO.statuses( new LinkedHashSet<ProjectStatus>( set ) );
-        }
         projectDTO.name( project.getName() );
         projectDTO.title( project.getTitle() );
         projectDTO.customer( project.getCustomer() );
@@ -63,10 +56,6 @@ public class ProjectMapperImpl implements ProjectMapper {
         if ( projectDTO.getDeadLineDate() != null ) {
             project.deadLineDate( LocalDate.parse( projectDTO.getDeadLineDate() ) );
         }
-        Set<ProjectStatus> set = projectDTO.getStatuses();
-        if ( set != null ) {
-            project.statuses( new LinkedHashSet<ProjectStatus>( set ) );
-        }
 
         return project.build();
     }
@@ -93,22 +82,6 @@ public class ProjectMapperImpl implements ProjectMapper {
         }
         else {
             project.setDeadLineDate( null );
-        }
-        if ( project.getStatuses() != null ) {
-            Set<ProjectStatus> set = projectDTO.getStatuses();
-            if ( set != null ) {
-                project.getStatuses().clear();
-                project.getStatuses().addAll( set );
-            }
-            else {
-                project.setStatuses( null );
-            }
-        }
-        else {
-            Set<ProjectStatus> set = projectDTO.getStatuses();
-            if ( set != null ) {
-                project.setStatuses( new LinkedHashSet<ProjectStatus>( set ) );
-            }
         }
     }
 }
