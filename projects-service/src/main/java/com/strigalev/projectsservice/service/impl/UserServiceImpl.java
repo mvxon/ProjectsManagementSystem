@@ -150,7 +150,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isPrincipalHaveTask(Long taskId) {
         User user = getPrincipal();
-        if (user.getRole() != Role.ADMIN || user.getRole() == Role.MANAGER) {
+        if (user.getRole() == Role.ADMIN || user.getRole() == Role.MANAGER) {
             return true;
         }
         if (getUserWorkingTasksIds(user.getId()).contains(taskId)) {

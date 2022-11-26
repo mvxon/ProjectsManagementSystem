@@ -1,20 +1,17 @@
 package com.strigalev.projectsservice.mapper;
 
 import com.strigalev.projectsservice.domain.Task;
-import com.strigalev.projectsservice.domain.TaskStatus;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-11-23T17:10:25+0300",
+    date = "2022-11-26T18:39:36+0300",
     comments = "version: 1.5.3.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-7.5.1.jar, environment: Java 17.0.4.1 (Amazon.com Inc.)"
 )
 @Component
@@ -29,10 +26,7 @@ public class TaskMapperImpl implements TaskMapper {
         TaskDTO.TaskDTOBuilder taskDTO = TaskDTO.builder();
 
         taskDTO.id( task.getId() );
-        Set<TaskStatus> set = task.getStatuses();
-        if ( set != null ) {
-            taskDTO.statuses( new LinkedHashSet<TaskStatus>( set ) );
-        }
+        taskDTO.status( task.getStatus() );
         taskDTO.title( task.getTitle() );
         taskDTO.description( task.getDescription() );
         if ( task.getCreationDate() != null ) {
@@ -76,10 +70,7 @@ public class TaskMapperImpl implements TaskMapper {
         if ( taskDTO.getDeadLineDate() != null ) {
             task.deadLineDate( LocalDate.parse( taskDTO.getDeadLineDate() ) );
         }
-        Set<TaskStatus> set = taskDTO.getStatuses();
-        if ( set != null ) {
-            task.statuses( new LinkedHashSet<TaskStatus>( set ) );
-        }
+        task.status( taskDTO.getStatus() );
 
         return task.build();
     }
@@ -105,21 +96,6 @@ public class TaskMapperImpl implements TaskMapper {
         else {
             task.setDeadLineDate( null );
         }
-        if ( task.getStatuses() != null ) {
-            Set<TaskStatus> set = taskDTO.getStatuses();
-            if ( set != null ) {
-                task.getStatuses().clear();
-                task.getStatuses().addAll( set );
-            }
-            else {
-                task.setStatuses( null );
-            }
-        }
-        else {
-            Set<TaskStatus> set = taskDTO.getStatuses();
-            if ( set != null ) {
-                task.setStatuses( new LinkedHashSet<TaskStatus>( set ) );
-            }
-        }
+        task.setStatus( taskDTO.getStatus() );
     }
 }

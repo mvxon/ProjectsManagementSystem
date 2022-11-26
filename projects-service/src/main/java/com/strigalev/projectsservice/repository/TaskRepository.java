@@ -5,8 +5,10 @@ import com.strigalev.projectsservice.domain.TaskStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -18,7 +20,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     Page<Task> findAllByProjectIdAndDeletedIsFalse(Pageable pageable, Long projectId);
 
-    Page<Task> findAllByProjectIdAndStatusesContainingAndDeletedIsFalse(Pageable pageable, Long projectId, TaskStatus status);
+    Page<Task> findAllByProjectIdAndStatusAndDeletedIsFalse(Pageable pageable, Long projectId, TaskStatus status);
 
     Page<Task> findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(Pageable pageable,
                                                                          LocalDate startDate,
@@ -33,4 +35,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query(value = "SELECT projectId FROM Task WHERE id = :id")
     Long findProjectIdById(@Param("id") Long id);
 
+    @Modifying
+    @Transactional
+    @Query("UPDATE Task SET status = :status WHERE id = :id")
+    void updateTaskStatus(Long id, TaskStatus status);
 }
