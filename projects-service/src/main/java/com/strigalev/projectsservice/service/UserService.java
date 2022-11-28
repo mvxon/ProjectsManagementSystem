@@ -1,7 +1,6 @@
 package com.strigalev.projectsservice.service;
 
 import com.strigalev.projectsservice.domain.User;
-import com.strigalev.projectsservice.dto.SignUpRequest;
 import com.strigalev.projectsservice.dto.UserStatisticDTO;
 import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.starter.model.UserAction;
@@ -14,15 +13,9 @@ import java.util.List;
 public interface UserService {
     User getUserById(Long id);
 
-    void saveUser(SignUpRequest signUpRequest);
-
     void deleteUser(Long id);
 
     UserDTO getUserDtoById(Long id);
-
-    UserDTO getUserDetailsByEmail(String email);
-
-    boolean existsByEmail(String email);
 
     User getUserByEmail(String email);
 
@@ -45,6 +38,4 @@ public interface UserService {
     void sendManagerAction(UserAction action, Long projectId, Long taskId, Long actionedUserId);
 
     List<UserStatisticDTO> getUserStatisticBetween(Long[] ids, LocalDateTime from, LocalDateTime to);
-
 }
-

@@ -1,0 +1,29 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+spring:
+  application:
+    name: mail-service
+  mail:
+    port: 587
+    host: smtp.gmail.com
+    username: pmsystem666@gmail.com
+    password: acqphrbrzwjorpqx
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
+  rabbitmq:
+    host: localhost
+    password: guest
+    port: 15672
+    username: guest
+    exchange: projects.exchange
+    routing-key: mail.routingKey
+    queue: mail.queue
+    mail-queue: mail.queue
+    mail-routing-key: mail.routingKey
+server:
+  port: 0

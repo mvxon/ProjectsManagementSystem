@@ -1,4 +1,4 @@
-package com.strigalev.starter.config;
+package com.strigalev.starter.rabbit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
@@ -26,11 +26,17 @@ public class RabbitMQConfig {
     @Value("${spring.rabbitmq.queue}")
     private String queue;
 
+    @Value("${spring.rabbitmq.mail-queue}")
+    private String mailQueue;
+
     @Value("${spring.rabbitmq.exchange}")
     private String exchange;
 
     @Value("${spring.rabbitmq.routing-key}")
     private String routingKey;
+
+    @Value("${spring.rabbitmq.mail-routing-key}")
+    private String mailRoutingKey;
 
     @Bean
     Queue queue() {
@@ -38,7 +44,12 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    Exchange myExchange() {
+    Queue mailQueue() {
+        return new Queue(mailQueue, true);
+    }
+
+    @Bean
+    Exchange exchange() {
         return ExchangeBuilder.directExchange(exchange).durable(true).build();
     }
 
@@ -46,8 +57,17 @@ public class RabbitMQConfig {
     Binding binding() {
         return BindingBuilder
                 .bind(queue())
-                .to(myExchange())
+                .to(exchange())
                 .with(routingKey)
+                .noargs();
+    }
+
+    @Bean
+    Binding mailBinding() {
+        return BindingBuilder
+                .bind(mailQueue())
+                .to(exchange())
+                .with(mailRoutingKey)
                 .noargs();
     }
 
@@ -71,6 +91,7 @@ public class RabbitMQConfig {
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
+
         return rabbitTemplate;
     }
 }

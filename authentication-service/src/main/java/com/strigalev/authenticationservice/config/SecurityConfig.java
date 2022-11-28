@@ -1,4 +1,4 @@
-package com.strigalev.authenticationservice.security.config;
+package com.strigalev.authenticationservice.config;
 
 import com.strigalev.authenticationservice.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
 

@@ -1,6 +1,6 @@
-package com.strigalev.projectsservice.dto;
+package com.strigalev.authenticationservice.dto;
 
-import com.strigalev.projectsservice.validation.annotation.EmailCheck;
+import com.strigalev.authenticationservice.validation.EmailCheck;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,4 +31,7 @@ public class SignUpRequest {
     @NotEmpty(message = "Lastname should not be empty")
     @Size(max = 30, min = 2, message = "Lastname length should be between {min} and {max} chars")
     private String lastName;
+
+    @NotEmpty(message = "Role should not be empty")
+    private String role;
 }

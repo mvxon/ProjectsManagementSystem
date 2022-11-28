@@ -1,14 +1,13 @@
-package com.strigalev.projectsservice.validation.validator;
+package com.strigalev.authenticationservice.validation;
 
-import com.strigalev.projectsservice.service.UserService;
-import com.strigalev.projectsservice.validation.annotation.EmailCheck;
+import com.strigalev.authenticationservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 @RequiredArgsConstructor
-public class EmailCheckValidator implements ConstraintValidator<EmailCheck, String> {
+public class EmailValidator implements ConstraintValidator<EmailCheck, String> {
     private final UserService userService;
 
 

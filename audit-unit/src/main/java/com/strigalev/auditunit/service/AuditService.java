@@ -21,7 +21,7 @@ public class AuditService {
     private final AuditRepository auditRepository;
 
     @RabbitListener(queues = "${spring.rabbitmq.queue}")
-    public void receivedMessage(Audit audit) {
+    public void saveReceivedMessage(Audit audit) {
         auditRepository.save(audit);
     }
 

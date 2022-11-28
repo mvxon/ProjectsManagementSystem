@@ -43,7 +43,7 @@ public class Project {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "project_id")
-    Set<Task> tasks;
+    private Set<Task> tasks;
 
 
     @ManyToMany(
@@ -54,5 +54,5 @@ public class Project {
             name = "projects_employees",
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "employee_id"))
-    Set<User> employees;
+    private Set<User> employees;
 }

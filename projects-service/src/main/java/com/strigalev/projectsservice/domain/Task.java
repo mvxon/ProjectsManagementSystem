@@ -50,5 +50,5 @@ public class Task implements Serializable {
             name = "tasks_employees",
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "employee_id"))
-    Set<User> employees;
+    private Set<User> employees;
 }

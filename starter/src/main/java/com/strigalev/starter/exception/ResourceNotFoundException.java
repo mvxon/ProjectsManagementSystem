@@ -1,4 +1,4 @@
-package com.strigalev.projectsservice.exception;
+package com.strigalev.starter.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
 

@@ -19,13 +19,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     implementation group: 'com.auth0', name: 'java-jwt', version: '4.2.1'
-    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.4'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.7.5'
     implementation group: 'redis.clients', name: 'jedis', version: '3.9.0'
-    implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.0.Final'
 }
 
 dependencyManagement {

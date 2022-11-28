@@ -1,6 +1,7 @@
 package com.strigalev.authenticationservice.exception;
 
 import com.strigalev.starter.dto.ApiResponseEntity;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import static com.strigalev.starter.util.MethodsUtil.getBindingResultErrors;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
 public class AuthExceptionHandler extends ResponseEntityExceptionHandler {
@@ -49,6 +51,15 @@ public class AuthExceptionHandler extends ResponseEntityExceptionHandler {
         return ApiResponseEntity.builder()
                 .message(ex.getMessage())
                 .status(FORBIDDEN)
+                .build();
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(NOT_FOUND)
+    protected ApiResponseEntity handleResourceNotFound(ResourceNotFoundException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(NOT_FOUND)
                 .build();
     }
 

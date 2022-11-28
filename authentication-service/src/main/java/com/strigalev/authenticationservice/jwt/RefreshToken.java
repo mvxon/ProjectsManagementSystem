@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.RedisHash;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefreshToken {
+
     @Id
     private Long id;
     private Long ownerId;

@@ -1,24 +1,36 @@
-package com.strigalev.authenticationservice.security.model;
+package com.strigalev.authenticationservice.domain;
 
 import com.strigalev.starter.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.persistence.*;
 import java.util.List;
 
+@Entity
+@Table(name = "users")
 @Data
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Builder
-public class CustomUserDetails implements UserDetails {
+public class User implements UserDetails {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String email; // email
+    private String firstName;
+    private String lastName;
     private String password;
+    private boolean active;
+
+    @Column(unique = true)
+    private String email;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @Override
@@ -38,21 +50,21 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return active;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return active;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return active;
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 }

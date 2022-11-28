@@ -8,6 +8,14 @@ eureka:
 spring:
   application:
     name: authentication-service
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/projects_management}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:1}
+
   rabbitmq:
     host: localhost
     password: guest
@@ -16,6 +24,8 @@ spring:
     exchange: projects.exchange
     routing-key: projects.routingKey
     queue: projects.queue
+    mail-queue: mail.queue
+    mail-routing-key: mail.routingKey
 
 redis:
   host: localhost
@@ -26,3 +36,6 @@ jwt:
   refreshTokenSecret: aleykum
   refreshTokenExpirationDays: 30
   accessTokenExpirationMinutes: 300
+recovery:
+  accessCodePartsCount: 3
+  accessCodeExpirationHours: 5

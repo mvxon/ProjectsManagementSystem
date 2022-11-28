@@ -21,3 +21,5 @@ spring:
     exchange: projects.exchange
     routing-key: projects.routingKey
     queue: projects.queue
+    mail-queue: mail.queue
+    mail-routing-key: mail.routingKey

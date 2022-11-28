@@ -5,9 +5,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.strigalev.authenticationservice.domain.User;
 import com.strigalev.authenticationservice.jwt.RefreshToken;
 import com.strigalev.authenticationservice.repository.TokenRepository;
-import com.strigalev.authenticationservice.security.model.CustomUserDetails;
 import com.strigalev.starter.dto.TokenDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,17 +47,17 @@ public class JwtServiceImpl implements JwtService {
                 .build();
     }
 
-    public String generateAccessToken(CustomUserDetails userDetails) {
+    public String generateAccessToken(User user) {
         return JWT.create()
                 .withIssuer(issuer)
-                .withSubject(userDetails.getEmail())
-                .withClaim("role", userDetails.getRole().toString())
+                .withSubject(user.getEmail())
+                .withClaim("role", user.getRole().toString())
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(new Date().getTime() + accessTokenExpirationMs))
                 .sign(accessTokenAlgorithm);
     }
 
-    public String generateRefreshToken(CustomUserDetails user, RefreshToken refreshToken) {
+    public String generateRefreshToken(User user, RefreshToken refreshToken) {
         return JWT.create()
                 .withIssuer(issuer)
                 .withSubject(user.getEmail())
@@ -88,16 +88,16 @@ public class JwtServiceImpl implements JwtService {
         tokenRepository.deleteById(getTokenIdFromRefreshToken(refreshToken));
     }
 
-    public TokenDTO generateTokensPair(CustomUserDetails userDetails) {
+    public TokenDTO generateTokensPair(User user) {
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setOwnerId(userDetails.getId());
+        refreshToken.setOwnerId(user.getId());
         tokenRepository.save(refreshToken);
-        refreshToken.setToken(generateRefreshToken(userDetails, refreshToken));
+        refreshToken.setToken(generateRefreshToken(user, refreshToken));
         tokenRepository.save(refreshToken);
         return TokenDTO.builder()
-                .accessToken(generateAccessToken(userDetails))
+                .accessToken(generateAccessToken(user))
                 .refreshToken(refreshToken.getToken())
-                .userId(userDetails.getId())
+                .userId(user.getId())
                 .build();
     }
 

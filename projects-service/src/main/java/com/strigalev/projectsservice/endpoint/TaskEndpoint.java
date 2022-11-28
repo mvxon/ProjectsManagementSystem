@@ -3,7 +3,7 @@ package com.strigalev.projectsservice.endpoint;
 import com.strigalev.projectsservice.domain.TaskStatus;
 import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
-import com.strigalev.projectsservice.exception.ResourceNotFoundException;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
 import com.strigalev.starter.dto.ApiResponseEntity;

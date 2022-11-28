@@ -95,3 +95,5 @@ HELP.md
 /.gradle/
 /gradlew.bat
 /gradlew
+/mail-service/gradlew
+/mail-service/gradlew.bat

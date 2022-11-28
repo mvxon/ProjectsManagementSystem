@@ -7,7 +7,7 @@ import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import com.strigalev.projectsservice.exception.EmployeeException;
 import com.strigalev.projectsservice.exception.InvalidStatusException;
-import com.strigalev.projectsservice.exception.ResourceNotFoundException;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.TaskListMapper;
 import com.strigalev.projectsservice.mapper.TaskMapper;
 import com.strigalev.projectsservice.repository.TaskRepository;
@@ -30,7 +30,7 @@ import static com.strigalev.projectsservice.domain.TaskStatus.*;
 import static com.strigalev.starter.model.Role.DEVELOPER;
 import static com.strigalev.starter.model.Role.TESTER;
 import static com.strigalev.starter.model.UserAction.*;
-import static com.strigalev.starter.util.MethodsUtil.getTaskNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -166,8 +166,7 @@ public class TaskServiceImpl implements TaskService {
 
             userService.sendUserTaskAction(OPEN_TASK, taskId);
         } else {
-            throw new InvalidStatusException(String.format("Task with %oid is already in %s status", taskId,
-                    task.getStatus()));
+            throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
     }
 
@@ -180,12 +179,10 @@ public class TaskServiceImpl implements TaskService {
 
         if (projectService.isUserAndTaskMatchesOnProject(task, user) && !isTaskHasUserWithRole(task, user.getRole())) {
             if (!employees.add(user)) {
-                throw new InvalidStatusException(
-                        String.format("User with %oid is already assigned with %oid task", userId, taskId));
+                throw new InvalidStatusException(getUserIsAlreadyAssignedWithTaskMessage(userId, taskId));
             }
         } else {
-            throw new EmployeeException(String.format("User with %s role is already assigned with %oid task",
-                    DEVELOPER, taskId));
+            throw new EmployeeException(getTaskIsAlreadyHasUserWithRoleMessage(taskId, user.getRole()));
         }
 
         userService.sendManagerAction(ASSIGN_TASK_TO_USER, null, taskId, userId);
@@ -205,12 +202,10 @@ public class TaskServiceImpl implements TaskService {
 
 
         if (task.getStatus() == DEVELOPING && user.getRole() == DEVELOPER) {
-            throw new InvalidStatusException(String.format("Task with %oid is already in %s status",
-                    taskId, task.getStatus()));
+            throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
         if (!task.getEmployees().remove(user)) {
-            throw new EmployeeException(String.format("User %oid don't have assigned task with %oid", userId,
-                    taskId));
+            throw new EmployeeException(getUserNotAssignedWithTaskMessage(userId, taskId));
         }
 
         userService.sendManagerAction(UNASSIGN_TASK_TO_USER, null, taskId, userId);
@@ -232,12 +227,10 @@ public class TaskServiceImpl implements TaskService {
                     userService.sendUserTaskAction(TAKE_TASK_FOR_DEVELOPING, taskId);
                 }
             } else {
-                throw new EmployeeException(String.format("Task with %oid does not have user with role %s", taskId,
-                        DEVELOPER));
+                throw new EmployeeException(getTaskHasNoUserWithRoleMessage(taskId, DEVELOPER));
             }
         } else {
-            throw new InvalidStatusException(String.format("Task with %oid is already in %s status", taskId,
-                    task.getStatus()));
+            throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
         return getTaskDtoById(taskId);
     }
@@ -246,18 +239,16 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public void setTaskCompleted(Long taskId) {
         Task task = getTaskById(taskId);
+        if (task.getStatus() == DEVELOPING) {
+            if (userService.isPrincipalHaveTask(taskId)) {
 
-        if (userService.isPrincipalHaveTask(taskId)) {
-            if (task.getStatus() == DEVELOPING) {
                 setTaskStatus(taskId, COMPLETED);
 
                 userService.sendUserTaskAction(COMPLETED_TASK, taskId);
-            } else {
-                throw new InvalidStatusException(String.format("Task with %oid is already in %s status", taskId,
-                        task.getStatus()));
             }
+        } else {
+            throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
-
     }
 
     @Override
@@ -276,11 +267,10 @@ public class TaskServiceImpl implements TaskService {
                     return getTaskDtoById(taskId);
                 }
             } else {
-                throw new EmployeeException(String.format("Task with %oid does not have user with role %s", taskId,
-                        TESTER));
+                throw new EmployeeException(getTaskHasNoUserWithRoleMessage(taskId, TESTER));
             }
         }
-        throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId, COMPLETED));
+        throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, COMPLETED.name()));
     }
 
     @Override
@@ -288,16 +278,17 @@ public class TaskServiceImpl implements TaskService {
     public void setTaskTested(Long taskId) {
         Task task = getTaskById(taskId);
 
-        if (userService.isPrincipalHaveTask(taskId)) {
-            if (task.getStatus() == TESTING) {
+        if (task.getStatus() == TESTING) {
+            if (userService.isPrincipalHaveTask(taskId)) {
+
                 setTaskStatus(taskId, TESTED);
 
                 userService.sendUserTaskAction(COMPLETED_TASK_TESTING, taskId);
-            } else {
-                throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId, TESTING));
-            }
-        }
 
+            }
+        } else {
+            throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, TESTING.name()));
+        }
     }
 
     @Override
@@ -305,18 +296,18 @@ public class TaskServiceImpl implements TaskService {
     public void setTaskDocumented(Long taskId) {
         Task task = getTaskById(taskId);
 
-        if (userService.isPrincipalHaveTask(taskId)) {
-            if (task.getStatus() == TESTED) {
+        if (task.getStatus() == TESTED) {
+            if (userService.isPrincipalHaveTask(taskId)) {
+
                 setTaskStatus(taskId, DOCUMENTED);
 
                 userService.sendUserTaskAction(SET_TASK_DOCUMENTED, taskId);
 
                 schedulingService.schedule(taskId);
-            } else {
-                throw new InvalidStatusException(String.format("Task with %oid is not in %s status", taskId, COMPLETED));
             }
+        } else {
+            throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, TESTED.name()));
         }
-
     }
 
 }

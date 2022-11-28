@@ -1,14 +1,11 @@
-package com.strigalev.projectsservice.validation.annotation;
-
-import com.strigalev.projectsservice.validation.validator.EmailCheckValidator;
-import com.strigalev.projectsservice.validation.validator.ProjectNameValidator;
+package com.strigalev.authenticationservice.validation;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = EmailCheckValidator.class)
+@Constraint(validatedBy = EmailValidator.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EmailCheck {

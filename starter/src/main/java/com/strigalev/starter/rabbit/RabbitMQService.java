@@ -1,6 +1,7 @@
 package com.strigalev.starter.rabbit;
 
 import com.strigalev.starter.dto.AuditDTO;
+import com.strigalev.starter.dto.MailMessageDTO;
 import com.strigalev.starter.model.Role;
 import com.strigalev.starter.model.UserAction;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,10 @@ public class RabbitMQService {
 
     @Value("${spring.rabbitmq.routingkey}")
     private String routingKey;
+
+    @Value("${spring.rabbitmq.mail-routing-key}")
+    private String mailRoutingKey;
+
 
     private final RabbitTemplate rabbitTemplate;
 
@@ -56,5 +61,9 @@ public class RabbitMQService {
                         .actionedUserId(actionedUserId)
                         .build()
         );
+    }
+
+    public void sendMailMessage(MailMessageDTO mailMessageDTO) {
+        rabbitTemplate.convertAndSend(exchange, mailRoutingKey, mailMessageDTO);
     }
 }

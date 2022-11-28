@@ -1,6 +1,7 @@
 package com.strigalev.projectsservice.exception;
 
 import com.strigalev.starter.dto.ApiResponseEntity;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

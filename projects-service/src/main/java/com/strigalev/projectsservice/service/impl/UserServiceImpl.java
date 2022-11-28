@@ -2,9 +2,7 @@ package com.strigalev.projectsservice.service.impl;
 
 import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.CompletedTaskDTO;
-import com.strigalev.projectsservice.dto.SignUpRequest;
 import com.strigalev.projectsservice.dto.UserStatisticDTO;
-import com.strigalev.projectsservice.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.feign.FeignClientService;
 import com.strigalev.projectsservice.mapper.UserMapper;
 import com.strigalev.projectsservice.repository.TaskRepository;
@@ -14,6 +12,7 @@ import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.dto.AuditDTO;
 import com.strigalev.starter.dto.DateIntervalDTO;
 import com.strigalev.starter.dto.UserDTO;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.starter.model.Role;
 import com.strigalev.starter.model.UserAction;
 import com.strigalev.starter.rabbit.RabbitMQService;
@@ -22,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,15 +31,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.strigalev.starter.util.MethodsUtil.getUserNotExistsMessage;
-import static com.strigalev.starter.util.MethodsUtil.getUserWithEmailNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.*;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
-    private final PasswordEncoder passwordEncoder;
     private final ProjectService projectService;
     private final RabbitMQService rabbitMQService;
     private final FeignClientService feignClientService;
@@ -49,14 +45,13 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(
             UserMapper userMapper,
             UserRepository userRepository,
-            TaskRepository taskRepository, @Lazy PasswordEncoder passwordEncoder,
+            TaskRepository taskRepository,
             @Lazy ProjectService projectService,
             RabbitMQService rabbitMQService,
             FeignClientService feignClientService) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
-        this.passwordEncoder = passwordEncoder;
         this.projectService = projectService;
         this.rabbitMQService = rabbitMQService;
         this.feignClientService = feignClientService;
@@ -72,15 +67,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void saveUser(SignUpRequest signUpRequest) {
-        User mappedUser = userMapper.map(signUpRequest);
-        mappedUser.setRole(Role.DEVELOPER);
-        mappedUser.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-        userRepository.save(mappedUser);
-    }
-
-    @Override
-    @Transactional
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
@@ -88,17 +74,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getUserDtoById(Long id) {
         return userMapper.map(getUserById(id));
-    }
-
-
-    @Override
-    public UserDTO getUserDetailsByEmail(String email) {
-        return userMapper.mapWithPassword(getUserByEmail(email));
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
     }
 
     @Override
@@ -157,8 +132,7 @@ public class UserServiceImpl implements UserService {
             return true;
         }
 
-        throw new ResourceNotFoundException(String.format("User %oid don't have assigned task with %oid", user.getId(),
-                taskId));
+        throw new ResourceNotFoundException(getUserNotAssignedWithTaskMessage(user.getId(), taskId));
     }
 
     @Override
@@ -289,7 +263,7 @@ public class UserServiceImpl implements UserService {
     private List<Long> getUserWorkingTasksIds(Long id) {
         List<Long> tasksIds = userRepository.getTasksIdsByUserId(id);
         if (tasksIds.isEmpty()) {
-            throw new ResourceNotFoundException(String.format("User with %oid don't have assigned tasks", id));
+            throw new ResourceNotFoundException(getUserHasNoAssignedTasksMessage(id));
         }
         return tasksIds;
     }

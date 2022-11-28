@@ -2,7 +2,10 @@ package com.strigalev.starter.model;
 
 public enum UserAction {
     LOGOUT,
-    LOGIN,
+    SIGN_IN,
+    SIGN_UP,
+    REQUEST_RESET_PASSWORD,
+    RESET_PASSWORD,
     CREATE_PROJECT,
     UPDATE_PROJECT,
     UPDATE_TASK,
@@ -18,5 +21,4 @@ public enum UserAction {
     SET_TASK_TESTING,
     COMPLETED_TASK_TESTING,
     SET_TASK_DOCUMENTED,
-    SET_TASK_ARCHIVED
 }

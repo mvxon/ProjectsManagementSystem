@@ -1,5 +1,6 @@
 package com.strigalev.starter.util;
 
+import com.strigalev.starter.model.Role;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -40,5 +41,37 @@ public final class MethodsUtil {
 
     public static String getUserWithEmailNotExistsMessage(String email) {
         return String.format("User with email: %s does not exists", email);
+    }
+
+    public static String getUserWithEmailNotActiveMessage(String email) {
+        return String.format("User with email: %s is not active", email);
+    }
+
+    public static String getTaskIsNotInStatusMessage(Long taskId, String status) {
+        return String.format("Task with %oid is not in %s status", taskId, status);
+    }
+
+    public static String getTaskIsAlreadyInStatusMessage(Long taskId, String status) {
+        return String.format("Task with %oid is already in %s status", taskId, status);
+    }
+
+    public static String getTaskHasNoUserWithRoleMessage(Long taskId, Role role) {
+        return String.format("Task with %oid does not have user with role %s", taskId, role);
+    }
+
+    public static String getTaskIsAlreadyHasUserWithRoleMessage(Long taskId, Role role) {
+        return String.format("Task with %oid is already have user with role %s", taskId, role);
+    }
+
+    public static String getUserNotAssignedWithTaskMessage(Long userId, Long taskId) {
+        return String.format("User %oid don't have assigned task with %oid", userId, taskId);
+    }
+
+    public static String getUserIsAlreadyAssignedWithTaskMessage(Long userId, Long taskId) {
+        return String.format("User %oid is already have assigned task with %oid", userId, taskId);
+    }
+
+    public static String getUserHasNoAssignedTasksMessage(Long userId) {
+        return String.format("User %oid don't have assigned tasks", userId);
     }
 }

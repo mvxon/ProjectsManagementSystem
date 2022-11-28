@@ -6,7 +6,7 @@ import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import com.strigalev.projectsservice.exception.EmployeeException;
-import com.strigalev.projectsservice.exception.ResourceNotFoundException;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.ProjectListMapper;
 import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
