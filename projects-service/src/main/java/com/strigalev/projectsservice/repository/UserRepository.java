@@ -28,8 +28,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    boolean existsByEmail(String email);
-
     @Query(value = "SELECT project_id FROM projects_employees WHERE employee_id = :id", nativeQuery = true)
     List<Long> getProjectsIdsByUserId(@Param("id") Long id);
 

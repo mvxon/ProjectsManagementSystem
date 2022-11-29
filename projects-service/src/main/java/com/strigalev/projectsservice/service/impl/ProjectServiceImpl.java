@@ -43,6 +43,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public Project getProjectByTask(Task task) {
+        return projectRepository.findByTasksContainingAndDeletedIsFalse(task);
+    }
+
+    @Override
     public Project getProjectByName(String name) {
         return projectRepository.findByNameAndDeletedIsFalse(name)
                 .orElseThrow(
@@ -57,12 +62,24 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
+    public Long addTaskToProject(Long projectId, Task task) {
+        Project project = getProjectById(projectId);
+        project.getTasks().add(task);
+        projectRepository.save(project);
+
+        userService.sendManagerProjectAction(ADD_TASK_TO_PROJECT, project, task);
+
+        return task.getId();
+    }
+
+    @Override
+    @Transactional
     public Long createProject(ProjectDTO projectDTO) {
         Project project = projectMapper.map(projectDTO);
         project.setDeadLineDate(LocalDate.parse(projectDTO.getDeadLineDate()));
         project.setStatus(CREATED);
 
-        userService.sendUserProjectAction(CREATE_PROJECT, projectRepository.save(project).getId());
+        userService.sendManagerProjectAction(CREATE_PROJECT, projectRepository.save(project), null);
 
         return project.getId();
     }
@@ -72,13 +89,9 @@ public class ProjectServiceImpl implements ProjectService {
     public void deleteProject(Long id) {
         Project project = getProjectById(id);
         project.setDeleted(true);
-        project.getEmployees().clear();
-        project.getTasks().forEach(task -> {
-            task.setDeleted(true);
-            task.getEmployees().clear();
-        });
+        project.getTasks().forEach(task -> task.setDeleted(true));
 
-        userService.sendUserProjectAction(DELETE_PROJECT, projectRepository.save(project).getId());
+        userService.sendManagerProjectAction(DELETE_PROJECT, projectRepository.save(project), null);
     }
 
     @Override
@@ -107,7 +120,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project savedProject = getProjectById(projectDTO.getId());
         projectMapper.updateProjectFromDto(projectDTO, savedProject);
 
-        userService.sendUserProjectAction(UPDATE_PROJECT, projectRepository.save(savedProject).getId());
+        userService.sendManagerProjectAction(UPDATE_PROJECT, projectRepository.save(savedProject), null);
     }
 
     @Override
@@ -129,7 +142,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         }
 
-        userService.sendManagerAction(ADD_USER_TO_PROJECT, projectId, null, userId);
+        userService.sendManagerAction(ADD_USER_TO_PROJECT, project, null, userId);
 
         projectRepository.save(project);
     }

@@ -1,5 +1,7 @@
 package com.strigalev.projectsservice.service;
 
+import com.strigalev.projectsservice.domain.Project;
+import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.UserStatisticDTO;
 import com.strigalev.starter.dto.UserDTO;
@@ -31,11 +33,16 @@ public interface UserService {
 
     List<UserDTO> getUsersDtoByFullName(String firstName, String lastName);
 
-    void sendUserTaskAction(UserAction action, Long taskId);
+    void sendUserTaskAction(UserAction action, Task task);
 
-    void sendUserProjectAction(UserAction action, Long projectId);
+    void sendManagerTaskAction(UserAction action, Task task);
 
-    void sendManagerAction(UserAction action, Long projectId, Long taskId, Long actionedUserId);
+    void sendManagerProjectAction(UserAction action, Project project, Task task);
 
-    List<UserStatisticDTO> getUserStatisticBetween(Long[] ids, LocalDateTime from, LocalDateTime to);
+    void sendManagerAction(UserAction action, Project project, Task task, Long actionedUserId);
+
+    List<UserStatisticDTO> getUserStatisticBetween(Long[] usersIds, LocalDateTime from, LocalDateTime to);
+
+    User getPrincipal();
+
 }

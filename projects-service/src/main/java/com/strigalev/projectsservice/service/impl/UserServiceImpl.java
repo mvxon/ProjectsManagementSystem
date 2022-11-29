@@ -1,5 +1,7 @@
 package com.strigalev.projectsservice.service.impl;
 
+import com.strigalev.projectsservice.domain.Project;
+import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.CompletedTaskDTO;
 import com.strigalev.projectsservice.dto.UserStatisticDTO;
@@ -11,6 +13,7 @@ import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.dto.AuditDTO;
 import com.strigalev.starter.dto.DateIntervalDTO;
+import com.strigalev.starter.dto.MailMessageDTO;
 import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.starter.model.Role;
@@ -31,6 +34,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.strigalev.starter.model.Role.ADMIN;
+import static com.strigalev.starter.model.Role.MANAGER;
+import static com.strigalev.starter.model.UserAction.CREATE_PROJECT;
 import static com.strigalev.starter.util.MethodsUtil.*;
 
 @Service
@@ -125,7 +131,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isPrincipalHaveTask(Long taskId) {
         User user = getPrincipal();
-        if (user.getRole() == Role.ADMIN || user.getRole() == Role.MANAGER) {
+        if (user.getRole() == Role.ADMIN || user.getRole() == MANAGER) {
             return true;
         }
         if (getUserWorkingTasksIds(user.getId()).contains(taskId)) {
@@ -150,41 +156,137 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void sendUserTaskAction(UserAction action, Long taskId) {
-        User user = getPrincipal();
+    public void sendUserTaskAction(UserAction action, Task task) {
+        User principal = getPrincipal();
+        Project project = projectService.getProjectByTask(task);
+
         rabbitMQService
-                .sendAuditMessage(action, LocalDateTime.now(), user.getEmail(), user.getRole(), null, taskId,
-                        null);
+                .sendAuditMessage(
+                        action,
+                        LocalDateTime.now(),
+                        principal.getEmail(),
+                        principal.getRole(),
+                        project.getId(),
+                        task.getId(),
+                        null)
+        ;
+        String projectName = project.getName();
+
+        sendEmailMessageToTaskEmployees(principal, task, action, projectName);
     }
 
     @Override
-    public void sendUserProjectAction(UserAction action, Long projectId) {
-        User user = getPrincipal();
+    public void sendManagerTaskAction(UserAction action, Task task) {
+        User principal = getPrincipal();
+        Project project = projectService.getProjectByTask(task);
         rabbitMQService
-                .sendAuditMessage(action, LocalDateTime.now(), user.getEmail(), user.getRole(), projectId, null,
-                        null);
-    }
-
-    @Override
-    public void sendManagerAction(UserAction action, Long projectId, Long taskId, Long actionedUserId) {
-        User user = getPrincipal();
-        rabbitMQService
-                .sendAuditMessage(action, LocalDateTime.now(), user.getEmail(), user.getRole(), projectId, taskId,
-                        actionedUserId
+                .sendAuditMessage(
+                        action,
+                        LocalDateTime.now(),
+                        principal.getEmail(),
+                        principal.getRole(),
+                        project.getId(),
+                        task.getId(),
+                        null
                 );
+
+        String taskTittle = task.getTitle();
+
+        sendEmailMessageToProjectManagers(principal, project, action, taskTittle);
+
+        sendEmailMessageToTaskEmployees(principal, task, action, project.getName());
     }
 
+    @Override
+    public void sendManagerProjectAction(UserAction action, Project project, Task task) {
+        User principal = getPrincipal();
+
+        String taskTittle = task == null ? null : task.getTitle();
+        Long taskId = task == null ? null : task.getId();
+
+        rabbitMQService
+                .sendAuditMessage(
+                        action,
+                        LocalDateTime.now(),
+                        principal.getEmail(),
+                        principal.getRole(),
+                        project.getId(),
+                        taskId,
+                        null
+                );
+
+        if (action != CREATE_PROJECT) {
+            sendEmailMessageToProjectEmployees(principal, project, action, taskTittle);
+        }
+    }
+
+    @Override
+    public void sendManagerAction(UserAction action, Project project, Task task, Long actionedUserId) {
+        User manager = getPrincipal();
+
+        rabbitMQService
+                .sendAuditMessage(action, LocalDateTime.now(), manager.getEmail(), manager.getRole(), project.getId(),
+                        task.getId(), actionedUserId
+                );
+
+        sendEmailMessage(manager, action, project.getName(), task.getTitle(), getUserById(actionedUserId));
+        sendEmailMessageToProjectManagers(manager, project, action, task.getTitle());
+    }
+
+    private void sendEmailMessageToTaskEmployees(User sender, Task task, UserAction action, String projectName) {
+        task.getEmployees().stream()
+                .filter(user -> !user.equals(sender))
+                .forEach(user -> sendEmailMessage(sender, action, projectName, task.getTitle(), user));
+    }
+
+    private void sendEmailMessageToProjectManagers(User sender, Project project, UserAction action, String taskTittle) {
+        project.getEmployees().stream()
+                .filter(user -> user.getRole() == MANAGER || user.getRole() == ADMIN)
+                .filter(user -> !user.equals(sender))
+                .toList()
+                .forEach(user -> sendEmailMessage(sender, action, project.getName(), taskTittle, user));
+    }
+
+    private void sendEmailMessageToProjectEmployees(User sender, Project project, UserAction action, String taskTittle) {
+        project.getEmployees().stream()
+                .filter(user -> !user.equals(sender))
+                .toList()
+                .forEach(user -> sendEmailMessage(sender, action, project.getName(), taskTittle, user));
+    }
+
+    private void sendEmailMessage(
+            User actionUser,
+            UserAction action,
+            String projectName,
+            String taskTittle,
+            User actionedUser
+    ) {
+
+        String managerFullNameAndEmail = actionUser.getFirstName() + " "
+                + actionUser.getLastName() + " (" + actionUser.getEmail() + ")";
+
+        rabbitMQService.sendActionMailMessage(
+                action,
+                taskTittle,
+                projectName,
+                managerFullNameAndEmail,
+                actionedUser.getFirstName(),
+                MailMessageDTO.builder()
+                        .toEmail(actionedUser.getEmail())
+                        .build()
+        );
+    }
 
     @Override
     public List<UserStatisticDTO> getUserStatisticBetween(
-            Long[] ids,
+            Long[] usersIds,
             LocalDateTime from,
             LocalDateTime to
     ) {
         List<UserStatisticDTO> usersStatistics = new ArrayList<>();
 
-        Arrays.sort(ids);
-        Arrays.stream(ids).forEach(id -> {
+        Arrays.sort(usersIds);
+        Arrays.stream(usersIds).forEach(id -> {
             String email;
 
             try {
@@ -268,7 +370,7 @@ public class UserServiceImpl implements UserService {
         return tasksIds;
     }
 
-    private User getPrincipal() {
+    public User getPrincipal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = ((UserDTO) authentication.getPrincipal()).getEmail();
 

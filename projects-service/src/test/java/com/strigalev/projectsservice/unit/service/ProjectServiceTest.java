@@ -1,7 +1,6 @@
 package com.strigalev.projectsservice.unit.service;
 
 import com.strigalev.projectsservice.domain.Project;
-import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
@@ -13,12 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @SpringBootTest
@@ -92,19 +90,6 @@ class ProjectServiceTest {
 
         verify(projectMapper).updateProjectFromDto(projectDTO, project);
         verify(projectRepository).save(project);
-    }
-
-    @Test
-    void addTaskToProject() {
-        final Task task = mock(Task.class);
-        final Set<Task> tasks = new HashSet<>();
-        when(projectRepository.findById(ID)).thenReturn(Optional.of(project));
-        when(taskService.getTaskById(ID)).thenReturn(task);
-        when(project.getTasks()).thenReturn(tasks);
-
-        projectService.addTaskToProject(ID, ID);
-
-        assertEquals(1, tasks.size());
     }
 
 

@@ -20,8 +20,7 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 public class UserEndpoint {
     private final UserService userService;
-
-
+    
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);

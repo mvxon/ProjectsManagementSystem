@@ -13,9 +13,13 @@ public interface ProjectService {
 
     Project getProjectById(Long id);
 
+    Project getProjectByTask(Task task);
+
     Project getProjectByName(String name);
 
     ProjectDTO getProjectDtoById(Long id);
+
+    Long addTaskToProject(Long projectId, Task task);
 
     Long createProject(ProjectDTO projectDTO);
 

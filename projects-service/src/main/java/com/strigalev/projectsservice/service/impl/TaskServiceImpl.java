@@ -60,7 +60,7 @@ public class TaskServiceImpl implements TaskService {
         Task savedTask = getTaskById(taskDTO.getId());
         taskMapper.updateTaskFromDto(taskDTO, savedTask);
 
-        userService.sendUserTaskAction(UPDATE_TASK, taskRepository.save(savedTask).getId());
+        userService.sendManagerTaskAction(UPDATE_TASK, taskRepository.save(savedTask));
     }
 
     @Override
@@ -68,9 +68,8 @@ public class TaskServiceImpl implements TaskService {
     public void deleteTask(Long id) {
         Task task = getTaskById(id);
         task.setDeleted(true);
-        task.getEmployees().clear();
 
-        userService.sendUserTaskAction(DELETE_TASK, taskRepository.save(task).getId());
+        userService.sendManagerTaskAction(DELETE_TASK, taskRepository.save(task));
     }
 
     @Override
@@ -83,17 +82,12 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @Transactional
-    public Long createTaskInProject(TaskDTO taskDTO, Long projectId) {
+    public Task createTask(TaskDTO taskDTO) {
         Task task = taskMapper.map(taskDTO);
         task.setDeadLineDate(LocalDate.parse(taskDTO.getDeadLineDate()));
         task.setStatus(CREATED);
-        task.setProjectId(projectId);
 
-        userService.sendManagerAction(ADD_TASK_TO_PROJECT, projectId, taskRepository.save(task).getId(),
-                null);
-
-        return task.getId();
+        return task;
     }
 
     @Override
@@ -160,11 +154,12 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public void openTask(Long taskId) {
         Task task = getTaskById(taskId);
+
         if (task.getStatus() == CREATED) {
             task.setStatus(OPEN);
             taskRepository.save(task);
 
-            userService.sendUserTaskAction(OPEN_TASK, taskId);
+            userService.sendManagerTaskAction(OPEN_TASK, task);
         } else {
             throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
@@ -178,14 +173,16 @@ public class TaskServiceImpl implements TaskService {
         Set<User> employees = task.getEmployees();
 
         if (projectService.isUserAndTaskMatchesOnProject(task, user) && !isTaskHasUserWithRole(task, user.getRole())) {
-            if (!employees.add(user)) {
+            if (employees.add(user)) {
+                employees.add(userService.getPrincipal());
+            } else {
                 throw new InvalidStatusException(getUserIsAlreadyAssignedWithTaskMessage(userId, taskId));
             }
         } else {
             throw new EmployeeException(getTaskIsAlreadyHasUserWithRoleMessage(taskId, user.getRole()));
         }
 
-        userService.sendManagerAction(ASSIGN_TASK_TO_USER, null, taskId, userId);
+        userService.sendManagerAction(ASSIGN_TASK_TO_USER, projectService.getProjectByTask(task), task, userId);
 
         taskRepository.save(task);
     }
@@ -208,7 +205,7 @@ public class TaskServiceImpl implements TaskService {
             throw new EmployeeException(getUserNotAssignedWithTaskMessage(userId, taskId));
         }
 
-        userService.sendManagerAction(UNASSIGN_TASK_TO_USER, null, taskId, userId);
+        userService.sendManagerAction(UNASSIGN_TASK_TO_USER, projectService.getProjectByTask(task), task, userId);
 
         taskRepository.save(task);
     }
@@ -224,7 +221,7 @@ public class TaskServiceImpl implements TaskService {
                 if (userService.isPrincipalHaveTask(taskId)) {
                     setTaskStatus(taskId, DEVELOPING);
 
-                    userService.sendUserTaskAction(TAKE_TASK_FOR_DEVELOPING, taskId);
+                    userService.sendUserTaskAction(TAKE_TASK_FOR_DEVELOPING, task);
                 }
             } else {
                 throw new EmployeeException(getTaskHasNoUserWithRoleMessage(taskId, DEVELOPER));
@@ -244,7 +241,7 @@ public class TaskServiceImpl implements TaskService {
 
                 setTaskStatus(taskId, COMPLETED);
 
-                userService.sendUserTaskAction(COMPLETED_TASK, taskId);
+                userService.sendUserTaskAction(COMPLETED_TASK, task);
             }
         } else {
             throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
@@ -262,7 +259,7 @@ public class TaskServiceImpl implements TaskService {
 
                     setTaskStatus(taskId, TESTING);
 
-                    userService.sendUserTaskAction(SET_TASK_TESTING, taskId);
+                    userService.sendUserTaskAction(TAKE_TASK_FOR_TESTING, task);
 
                     return getTaskDtoById(taskId);
                 }
@@ -283,7 +280,7 @@ public class TaskServiceImpl implements TaskService {
 
                 setTaskStatus(taskId, TESTED);
 
-                userService.sendUserTaskAction(COMPLETED_TASK_TESTING, taskId);
+                userService.sendUserTaskAction(COMPLETED_TASK_TESTING, task);
 
             }
         } else {
@@ -301,7 +298,7 @@ public class TaskServiceImpl implements TaskService {
 
                 setTaskStatus(taskId, DOCUMENTED);
 
-                userService.sendUserTaskAction(SET_TASK_DOCUMENTED, taskId);
+                userService.sendUserTaskAction(SET_TASK_DOCUMENTED, task);
 
                 schedulingService.schedule(taskId);
             }

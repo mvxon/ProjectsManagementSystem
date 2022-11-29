@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface TaskService {
-    Long createTaskInProject(TaskDTO taskDTO, Long projectId);
+    Task createTask(TaskDTO taskDTO);
 
     Task getTaskById(Long id);
 

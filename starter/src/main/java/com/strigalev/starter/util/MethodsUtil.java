@@ -43,10 +43,6 @@ public final class MethodsUtil {
         return String.format("User with email: %s does not exists", email);
     }
 
-    public static String getUserWithEmailNotActiveMessage(String email) {
-        return String.format("User with email: %s is not active", email);
-    }
-
     public static String getTaskIsNotInStatusMessage(Long taskId, String status) {
         return String.format("Task with %oid is not in %s status", taskId, status);
     }

@@ -1,6 +1,7 @@
 package com.strigalev.starter.rabbit;
 
 import com.strigalev.starter.dto.AuditDTO;
+import com.strigalev.starter.dto.UserActionMailMessageDTO;
 import com.strigalev.starter.dto.MailMessageDTO;
 import com.strigalev.starter.model.Role;
 import com.strigalev.starter.model.UserAction;
@@ -63,7 +64,38 @@ public class RabbitMQService {
         );
     }
 
-    public void sendMailMessage(MailMessageDTO mailMessageDTO) {
-        rabbitTemplate.convertAndSend(exchange, mailRoutingKey, mailMessageDTO);
+    public void sendMailMessage(String toEmail, String body, String subject, UserAction action) {
+        rabbitTemplate.convertAndSend(exchange, mailRoutingKey,
+                UserActionMailMessageDTO.builder()
+                        .mailMessageDTO(
+                                MailMessageDTO.builder()
+                                        .body(body)
+                                        .subject(subject)
+                                        .toEmail(toEmail)
+                                        .build()
+                        )
+                        .userAction(action)
+                        .build()
+        );
+    }
+
+    public void sendActionMailMessage(UserAction action,
+                                      String taskTitle,
+                                      String projectName,
+                                      String managerFnAndEmail,
+                                      String firstName,
+                                      MailMessageDTO mailMessageDTO
+    ) {
+        rabbitTemplate.convertAndSend(exchange,
+                mailRoutingKey,
+                UserActionMailMessageDTO.builder()
+                        .actionUserFnAndEmail(managerFnAndEmail)
+                        .userAction(action)
+                        .taskTittle(taskTitle)
+                        .actionedUserFirstName(firstName)
+                        .mailMessageDTO(mailMessageDTO)
+                        .projectName(projectName)
+                        .build()
+        );
     }
 }

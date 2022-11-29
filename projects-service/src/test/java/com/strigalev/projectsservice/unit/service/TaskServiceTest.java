@@ -36,17 +36,6 @@ public class TaskServiceTest {
     private TaskDTO taskDTO;
 
     @Test
-    void createTask_shouldCallMapperAndRepository() {
-        when(taskMapper.map(taskDTO)).thenReturn(task);
-        when(taskDTO.getDeadLineDate()).thenReturn("2030-12-31");
-
-        taskService.createTaskInProject(taskDTO, ID);
-
-        verify(taskMapper).map(taskDTO);
-        verify(taskRepository).save(task);
-    }
-
-    @Test
     void getTaskById_shouldCallRepository() {
         when(taskRepository.findById(ID)).thenReturn(Optional.of(task));
 

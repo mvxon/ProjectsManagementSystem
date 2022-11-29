@@ -9,7 +9,6 @@ import com.strigalev.authenticationservice.jwt.service.JwtService;
 import com.strigalev.authenticationservice.jwt.service.JwtServiceImpl;
 import com.strigalev.authenticationservice.repository.AccessCodeRepository;
 import com.strigalev.authenticationservice.repository.UserRepository;
-import com.strigalev.starter.dto.MailMessageDTO;
 import com.strigalev.starter.dto.TokenDTO;
 import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.starter.model.Role;
@@ -27,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static com.strigalev.starter.model.UserAction.*;
 import static com.strigalev.starter.util.MethodsUtil.getUserWithEmailNotExistsMessage;
@@ -149,6 +149,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createAndSendAccessCode(String email) {
+        User user = loadUserByUsername(email);
 
         accessCodeRepository.deleteAllByUserEmail(email);
 
@@ -170,11 +171,12 @@ public class UserServiceImpl implements UserService {
 
         rabbitMQService.sendAuthAuditMessage(REQUEST_RESET_PASSWORD, LocalDateTime.now(), email);
 
-        rabbitMQService.sendMailMessage(MailMessageDTO.builder()
-                .toEmail(email)
-                .subject("Password recovering")
-                .body("Your access code: " + accessCode)
-                .build());
+        rabbitMQService.sendMailMessage(
+                email,
+                String.format("Hello, %s!\nYour access code: " + accessCode, user.getFirstName()),
+                "Password recovering",
+                REQUEST_RESET_PASSWORD
+        );
     }
 
 
@@ -182,7 +184,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void resetPassword(ResetPasswordDTO resetPasswordDTO) {
         AccessCode accessCode = accessCodeRepository.findByUserEmail(resetPasswordDTO.getEmail());
-        if (accessCode == null) {
+        if (accessCode == null || !Objects.equals(accessCode.getAccessCodeValue(), resetPasswordDTO.getAccessCode())) {
             throw new ResourceNotFoundException("Invalid access code");
         }
 
@@ -199,11 +201,12 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        rabbitMQService.sendMailMessage(MailMessageDTO.builder()
-                .toEmail(user.getEmail())
-                .subject("Password is changed")
-                .body("Your password is successfully changed.")
-                .build());
+        rabbitMQService.sendMailMessage(
+                user.getEmail(),
+                String.format("Dear %s, your password is successfully changed!", user.getFirstName()),
+                "Password is changed",
+                RESET_PASSWORD
+        );
 
         rabbitMQService.sendAuthAuditMessage(RESET_PASSWORD, LocalDateTime.now(), user.getEmail());
     }

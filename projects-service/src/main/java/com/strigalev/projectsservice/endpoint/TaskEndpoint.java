@@ -102,7 +102,9 @@ public class TaskEndpoint {
         if (!projectService.isProjectWithIdExists(projectId)) {
             throw new ResourceNotFoundException(getProjectNotExistsMessage(projectId));
         }
-        Long taskId = taskService.createTaskInProject(taskDTO, projectId);
+
+        Long taskId = projectService.addTaskToProject(projectId, taskService.createTask(taskDTO));
+
         return new ResponseEntity<>(
                 ApiResponseEntity.builder()
                         .object(taskId)

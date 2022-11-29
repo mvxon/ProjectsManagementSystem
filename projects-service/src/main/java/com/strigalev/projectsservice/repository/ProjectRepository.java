@@ -22,4 +22,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Optional<Project> findByIdAndDeletedIsFalse(Long id);
 
+    Project findByTasksContainingAndDeletedIsFalse(Task task);
+
 }
