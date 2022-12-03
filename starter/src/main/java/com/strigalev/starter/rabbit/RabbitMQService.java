@@ -19,10 +19,10 @@ public class RabbitMQService {
     @Value("${spring.rabbitmq.exchange}")
     private String exchange;
 
-    @Value("${spring.rabbitmq.routingkey}")
+    @Value("${spring.rabbitmq.audit-routing-key}")
     private String routingKey;
 
-    @Value("${spring.rabbitmq.mail-routing-key}")
+    @Value("${spring.rabbitmq.notification-routing-key}")
     private String mailRoutingKey;
 
 
@@ -35,7 +35,7 @@ public class RabbitMQService {
                 AuditDTO.builder()
                         .action(action)
                         .date(date)
-                        .userEmail(userEmail)
+                        .actionUserEmail(userEmail)
                         .build()
         );
     }
@@ -43,7 +43,8 @@ public class RabbitMQService {
     public void sendAuditMessage(
             UserAction action,
             LocalDateTime date,
-            String userEmail,
+            String actionUserEmail,
+            Long actionUserId,
             Role role,
             Long projectId,
             Long taskId,
@@ -58,7 +59,8 @@ public class RabbitMQService {
                         .projectId(projectId)
                         .taskId(taskId)
                         .date(date)
-                        .userEmail(userEmail)
+                        .actionedUserId(actionUserId)
+                        .actionUserEmail(actionUserEmail)
                         .actionedUserId(actionedUserId)
                         .build()
         );
@@ -74,7 +76,7 @@ public class RabbitMQService {
                                         .toEmail(toEmail)
                                         .build()
                         )
-                        .userAction(action)
+                        .action(action)
                         .build()
         );
     }
@@ -90,7 +92,7 @@ public class RabbitMQService {
                 mailRoutingKey,
                 UserActionMailMessageDTO.builder()
                         .actionUserFnAndEmail(managerFnAndEmail)
-                        .userAction(action)
+                        .action(action)
                         .taskTittle(taskTitle)
                         .actionedUserFirstName(firstName)
                         .mailMessageDTO(mailMessageDTO)

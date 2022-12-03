@@ -20,17 +20,17 @@ public class AuditService {
 
     private final AuditRepository auditRepository;
 
-    @RabbitListener(queues = "${spring.rabbitmq.queue}")
+    @RabbitListener(queues = "${spring.rabbitmq.audit-queue}")
     public void saveReceivedMessage(Audit audit) {
         auditRepository.save(audit);
     }
 
     public List<Audit> getUserCompletedTasksStatisticBetween(
-            String userEmail,
+            Long userId,
             UserAction action,
             DateIntervalDTO dateInterval
     ) {
-        return auditRepository.findByUserEmailAndActionAndDateBetween(userEmail,
+        return auditRepository.findByActionUserIdAndActionAndDateBetween(userId,
                         action,
                         dateInterval.getFrom(),
                         dateInterval.getTo()

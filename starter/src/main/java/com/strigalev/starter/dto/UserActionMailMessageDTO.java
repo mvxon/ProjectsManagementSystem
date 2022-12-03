@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserActionMailMessageDTO {
-    private UserAction userAction;
+    private UserAction action;
     private String taskTittle;
     private String projectName;
     private String actionUserFnAndEmail;

@@ -2,9 +2,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8081/eureka
+server:
+  port: 0
+
 spring:
-  application:
-    name: mail-service
+  application.name: report-service
   mail:
     port: 587
     host: smtp.gmail.com
@@ -15,15 +17,8 @@ spring:
         smtp:
           auth: true
           starttls.enable: true
-  rabbitmq:
-    host: localhost
-    password: guest
-    port: 15672
-    username: guest
-    exchange: projects.exchange
-    routing-key: mail.routingKey
-    queue: mail.queue
-    mail-queue: mail.queue
-    mail-routing-key: mail.routingKey
-server:
-  port: 0
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: pms_audit

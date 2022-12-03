@@ -1,10 +1,10 @@
-package com.strigalev.mailservice.util;
+package com.strigalev.notificationservice.util;
 
 import com.strigalev.starter.dto.UserActionMailMessageDTO;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class MailMessagesUtil {
+public class NotifyMessagesUtil {
     private final static String QUOTE = "\"";
 
     public static String getAddedToProjectMessage(UserActionMailMessageDTO businessActionMessage) {

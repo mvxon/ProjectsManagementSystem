@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface AuditRepository extends MongoRepository<Audit, String> {
 
-    List<Audit> findByUserEmailAndActionAndDateBetween(String userEmail,
+    List<Audit> findByActionUserIdAndActionAndDateBetween(Long actionUserId,
                                                        UserAction action,
                                                        LocalDateTime startDate,
                                                        LocalDateTime endDate);

@@ -21,7 +21,8 @@ public class AuditDTO {
 
     private UserAction action;
     private LocalDateTime date;
-    private String userEmail;
+    private Long actionUserId;
+    private String actionUserEmail;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long actionedUserId;

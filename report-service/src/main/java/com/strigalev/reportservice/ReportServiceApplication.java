@@ -1,15 +1,17 @@
-package com.strigalev.mailservice;
+package com.strigalev.reportservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication(scanBasePackages = {"com.strigalev.starter", "com.strigalev.mailservice"})
 @EnableEurekaClient
-public class MailServiceApplication {
+@EnableFeignClients
+@SpringBootApplication
+public class ReportServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MailServiceApplication.class, args);
+        SpringApplication.run(ReportServiceApplication.class, args);
     }
 
 }

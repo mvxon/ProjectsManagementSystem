@@ -19,8 +19,12 @@ public class AuditEndpoint {
 
     @PostMapping("/userCompletedTasksStatistics/{userEmail}")
     public ResponseEntity<List<Audit>> getUserCompletedTasks(
-            @PathVariable(name = "userEmail") String userEmail, @RequestBody DateIntervalDTO dateInterval
-            ) {
-        return ResponseEntity.ok(auditService.getUserCompletedTasksStatisticBetween(userEmail, UserAction.COMPLETED_TASK, dateInterval));
+            @PathVariable(name = "userId") Long userId, @RequestBody DateIntervalDTO dateInterval
+    ) {
+        return ResponseEntity.ok(auditService.getUserCompletedTasksStatisticBetween(
+                userId,
+                UserAction.COMPLETED_TASK,
+                dateInterval)
+        );
     }
 }

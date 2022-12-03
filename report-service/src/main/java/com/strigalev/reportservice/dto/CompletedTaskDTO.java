@@ -1,4 +1,4 @@
-package com.strigalev.projectsservice.dto;
+package com.strigalev.reportservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

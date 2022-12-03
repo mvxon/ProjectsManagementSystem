@@ -1,4 +1,4 @@
-package com.strigalev.projectsservice.feign;
+package com.strigalev.reportservice.feign;
 
 import com.strigalev.starter.dto.AuditDTO;
 import com.strigalev.starter.dto.DateIntervalDTO;
@@ -13,9 +13,9 @@ import java.util.List;
 @FeignClient(name = "audit-unit", path = "/api/v1/audit")
 public interface FeignClientService {
 
-    @GetMapping("/userCompletedTasksStatistics/{userEmail}")
+    @GetMapping("/userCompletedTasksStatistics/{userId}")
     ResponseEntity<List<AuditDTO>> getUserCompletedTasks(
-            @PathVariable String userEmail,
+            @PathVariable Long userId,
             @RequestBody DateIntervalDTO dateInterval
     );
 }

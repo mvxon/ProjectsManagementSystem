@@ -3,13 +3,11 @@ package com.strigalev.projectsservice.service;
 import com.strigalev.projectsservice.domain.Project;
 import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.User;
-import com.strigalev.projectsservice.dto.UserStatisticDTO;
 import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.starter.model.UserAction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface UserService {
@@ -40,8 +38,6 @@ public interface UserService {
     void sendManagerProjectAction(UserAction action, Project project, Task task);
 
     void sendManagerAction(UserAction action, Project project, Task task, Long actionedUserId);
-
-    List<UserStatisticDTO> getUserStatisticBetween(Long[] usersIds, LocalDateTime from, LocalDateTime to);
 
     User getPrincipal();
 

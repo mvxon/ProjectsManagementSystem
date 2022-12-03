@@ -23,24 +23,24 @@ public class RabbitMQConfig {
     @Value("${spring.rabbitmq.password}")
     private String password;
 
-    @Value("${spring.rabbitmq.queue}")
-    private String queue;
-
-    @Value("${spring.rabbitmq.mail-queue}")
-    private String mailQueue;
-
     @Value("${spring.rabbitmq.exchange}")
     private String exchange;
 
-    @Value("${spring.rabbitmq.routing-key}")
-    private String routingKey;
+    @Value("${spring.rabbitmq.audit-queue}")
+    private String auditQueue;
 
-    @Value("${spring.rabbitmq.mail-routing-key}")
-    private String mailRoutingKey;
+    @Value("${spring.rabbitmq.notification-queue}")
+    private String mailQueue;
+
+    @Value("${spring.rabbitmq.audit-routing-key}")
+    private String auditRoutingKey;
+
+    @Value("${spring.rabbitmq.notification-routing-key}")
+    private String notificationRoutingKey;
 
     @Bean
     Queue queue() {
-        return new Queue(queue, true);
+        return new Queue(auditQueue, true);
     }
 
     @Bean
@@ -58,16 +58,16 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(queue())
                 .to(exchange())
-                .with(routingKey)
+                .with(auditRoutingKey)
                 .noargs();
     }
 
     @Bean
-    Binding mailBinding() {
+    Binding notificationBinding() {
         return BindingBuilder
                 .bind(mailQueue())
                 .to(exchange())
-                .with(mailRoutingKey)
+                .with(notificationRoutingKey)
                 .noargs();
     }
 

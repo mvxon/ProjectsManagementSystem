@@ -21,11 +21,11 @@ spring:
     password: guest
     port: 15672
     username: guest
-    exchange: projects.exchange
-    routing-key: projects.routingKey
-    queue: projects.queue
-    mail-queue: mail.queue
-    mail-routing-key: mail.routingKey
+    exchange: pms.exchange
+    audit-routing-key: audit.routingKey
+    audit-queue: audit.queue
+    notification-queue: notification.queue
+    notification-routing-key: notification.routingKey
 
 redis:
   host: localhost
