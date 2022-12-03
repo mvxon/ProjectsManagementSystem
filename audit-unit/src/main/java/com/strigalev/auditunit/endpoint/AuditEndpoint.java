@@ -17,7 +17,7 @@ public class AuditEndpoint {
 
     private final AuditService auditService;
 
-    @PostMapping("/userCompletedTasksStatistics/{userEmail}")
+    @PostMapping("/userCompletedTasksStatistics/{userId}")
     public ResponseEntity<List<Audit>> getUserCompletedTasks(
             @PathVariable(name = "userId") Long userId, @RequestBody DateIntervalDTO dateInterval
     ) {

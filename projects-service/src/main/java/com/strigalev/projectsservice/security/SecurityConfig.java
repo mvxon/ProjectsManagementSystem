@@ -1,8 +1,6 @@
 package com.strigalev.projectsservice.security;
 
-import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.model.Role;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -16,12 +14,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final static String PATH_PROJECTS = "/api/v1/projects";
     private static final String PATH_TASKS = "/api/v1/tasks";
-    private final UserService userService;
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(
@@ -81,6 +77,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new UserIdFilter(userService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new PostGatewayFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

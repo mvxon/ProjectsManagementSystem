@@ -1,7 +1,6 @@
-package com.strigalev.projectsservice.security;
+package com.strigalev.reportservice.security;
 
-import com.strigalev.projectsservice.service.UserService;
-import com.strigalev.starter.dto.UserDTO;
+import com.strigalev.starter.model.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,41 +9,31 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Collections;
 
 
 @Slf4j
-public class UserIdFilter extends OncePerRequestFilter {
-
-
-    private final UserService userService;
-
-    public UserIdFilter(UserService userService) {
-        this.userService = userService;
-    }
+public class PostGatewayFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain
-    ) throws ServletException, IOException {
+    ) {
         try {
-            Long userId = Long.parseLong(request.getHeader("X-auth-user-id"));
-            UserDTO user = userService.getUserDtoById(userId);
+            Role role = Role.valueOf(request.getHeader("X-auth-user-role"));
             UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(
-                    user,
                     null,
-                    Collections.singletonList(new SimpleGrantedAuthority(user.getRole().toString())
+                    null,
+                    Collections.singletonList(new SimpleGrantedAuthority(role.toString())
                     ));
             upat.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(upat);
             filterChain.doFilter(request, response);
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             response.setStatus(403);
         }
 

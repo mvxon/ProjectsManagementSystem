@@ -31,7 +31,6 @@ public class RabbitMQConfig {
 
     @Value("${spring.rabbitmq.notification-queue}")
     private String mailQueue;
-
     @Value("${spring.rabbitmq.audit-routing-key}")
     private String auditRoutingKey;
 

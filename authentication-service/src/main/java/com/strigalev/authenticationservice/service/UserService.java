@@ -10,13 +10,13 @@ public interface UserService extends UserDetailsService {
 
     TokenDTO signUp(SignUpRequest signUpRequest);
 
-    TokenDTO login(SignInDTO dto);
+    TokenDTO signIn(SignInDTO dto);
 
-    void signIn(String refreshToken);
+    void logout(String refreshToken);
 
     TokenDTO updateRefreshToken(String refreshToken);
 
-    Long validateAccessToken(String token);
+    TokenDTO validateAccessToken(String token);
 
     boolean existsByEmail(String email);
 

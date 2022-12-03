@@ -1,11 +1,10 @@
-package com.strigalev.authenticationservice.exception;
+package com.strigalev.reportservice.exception;
 
 import com.strigalev.starter.dto.ApiResponseEntity;
 import com.strigalev.starter.exception.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -14,10 +13,10 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import static com.strigalev.starter.util.MethodsUtil.getBindingResultErrors;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
-public class AuthExceptionHandler extends ResponseEntityExceptionHandler {
+public class ReportExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
@@ -43,16 +42,6 @@ public class AuthExceptionHandler extends ResponseEntityExceptionHandler {
                 .build(), status);
     }
 
-
-    @ExceptionHandler(BadCredentialsException.class)
-    @ResponseStatus(FORBIDDEN)
-    protected ApiResponseEntity handleBadCredentials(BadCredentialsException ex) {
-        return ApiResponseEntity.builder()
-                .message(ex.getMessage())
-                .status(FORBIDDEN)
-                .build();
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(NOT_FOUND)
     protected ApiResponseEntity handleResourceNotFound(ResourceNotFoundException ex) {
@@ -61,15 +50,5 @@ public class AuthExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(NOT_FOUND)
                 .build();
     }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(BAD_REQUEST)
-    protected ApiResponseEntity handleIllegalArgument(IllegalArgumentException ex) {
-        return ApiResponseEntity.builder()
-                .message(ex.getMessage())
-                .status(BAD_REQUEST)
-                .build();
-    }
-
 
 }

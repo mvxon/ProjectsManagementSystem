@@ -1,5 +1,6 @@
 package com.strigalev.apigateway.filter;
 
+import com.strigalev.starter.dto.TokenDTO;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -20,10 +21,10 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
         this.webClientBuilder = webClientBuilder;
     }
 
-    private Mono<Void> onError(ServerWebExchange exchange, HttpStatus httpStatus) {
+    private Mono<Void> onError(ServerWebExchange exchange) {
 
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(httpStatus);
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
 
         return response.setComplete();
 
@@ -33,24 +34,25 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                return onError(exchange, HttpStatus.UNAUTHORIZED);
+                return onError(exchange);
             }
 
             String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
 
             String[] parts = authHeader.split(" ");
             if (parts.length != 2 || !"Bearer".equals(parts[0])) {
-                return onError(exchange, HttpStatus.UNAUTHORIZED);
+                return onError(exchange);
             }
 
             return webClientBuilder.build()
                     .get()
                     .uri("http://authentication-service/api/v1/auth/validateToken?token=" + parts[1])
-                    .retrieve().bodyToMono(Long.class)
-                    .map(id -> {
+                    .retrieve().bodyToMono(TokenDTO.class)
+                    .map(tokenDTO -> {
                                 exchange.getRequest()
                                         .mutate()
-                                        .header("X-auth-user-id", String.valueOf(id));
+                                        .header("X-auth-user-id", String.valueOf(tokenDTO.getUserId()))
+                                        .header("X-auth-user-role", String.valueOf(tokenDTO.getUserRole()));
                                 return exchange;
                             }
                     )

@@ -19,9 +19,6 @@ public class UserDTO {
     private Long id;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String password;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String firstName;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

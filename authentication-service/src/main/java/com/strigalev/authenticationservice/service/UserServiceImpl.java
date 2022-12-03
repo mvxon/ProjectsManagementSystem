@@ -7,6 +7,7 @@ import com.strigalev.authenticationservice.dto.SignInDTO;
 import com.strigalev.authenticationservice.dto.SignUpRequest;
 import com.strigalev.authenticationservice.jwt.service.JwtService;
 import com.strigalev.authenticationservice.jwt.service.JwtServiceImpl;
+import com.strigalev.authenticationservice.mapper.UserMapper;
 import com.strigalev.authenticationservice.repository.AccessCodeRepository;
 import com.strigalev.authenticationservice.repository.UserRepository;
 import com.strigalev.starter.dto.TokenDTO;
@@ -39,9 +40,9 @@ public class UserServiceImpl implements UserService {
     private final RabbitMQService rabbitMQService;
     private final PasswordEncoder passwordEncoder;
     private final AccessCodeRepository accessCodeRepository;
+    private final UserMapper userMapper;
     @Value("${recovery.accessCodePartsCount}")
     private int accessCodePartsCount;
-
     @Value("${recovery.accessCodeExpirationHours}")
     private int accessCodeExpirationHours;
 
@@ -51,7 +52,8 @@ public class UserServiceImpl implements UserService {
             UserRepository userRepository,
             RabbitMQService rabbitMQService,
             @Lazy PasswordEncoder passwordEncoder,
-            AccessCodeRepository accessCodeRepository
+            AccessCodeRepository accessCodeRepository,
+            UserMapper userMapper
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -59,6 +61,7 @@ public class UserServiceImpl implements UserService {
         this.rabbitMQService = rabbitMQService;
         this.passwordEncoder = passwordEncoder;
         this.accessCodeRepository = accessCodeRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -82,32 +85,36 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public TokenDTO signUp(SignUpRequest signUpRequest) {
-        User user = userRepository.save(
-                User.builder()
-                        .email(signUpRequest.getEmail())
-                        .firstName(signUpRequest.getFirstName())
-                        .lastName(signUpRequest.getLastName())
-                        .role(Role.valueOf(signUpRequest.getRole()))
-                        .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                        .active(true)
-                        .build());
+        User user = userMapper.map(signUpRequest);
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        user.setActive(true);
+        user.setRole(Role.valueOf(signUpRequest.getRole()));
+        userRepository.save(user);
 
-        rabbitMQService.sendAuthAuditMessage(SIGN_UP, LocalDateTime.now(), user.getEmail());
+        rabbitMQService.sendAuthAuditMessage(
+                SIGN_UP,
+                LocalDateTime.now(),
+                userMapper.map(user)
+        );
 
         return jwtService.generateTokensPair(user);
     }
 
     @Override
-    public TokenDTO login(SignInDTO dto) {
+    public TokenDTO signIn(SignInDTO signInDTO) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    dto.getEmail(),
-                    dto.getPassword()
+                    signInDTO.getEmail(),
+                    signInDTO.getPassword()
             ));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             User user = (User) authentication.getPrincipal();
 
-            rabbitMQService.sendAuthAuditMessage(SIGN_IN, LocalDateTime.now(), user.getEmail());
+            rabbitMQService.sendAuthAuditMessage(
+                    SIGN_IN,
+                    LocalDateTime.now(),
+                    userMapper.map(user)
+            );
 
             return jwtService.generateTokensPair(user);
         } catch (BadCredentialsException e) {
@@ -117,11 +124,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void signIn(String refreshToken) {
+    public void logout(String refreshToken) {
         jwtService.validateAndDeleteRefreshToken(refreshToken);
 
-        rabbitMQService.sendAuthAuditMessage(LOGOUT, LocalDateTime.now(),
-                jwtService.getUserEmailFromRefreshToken(refreshToken)
+        User user = loadUserByUsername(jwtService.getUserEmailFromRefreshToken(refreshToken));
+        rabbitMQService.sendAuthAuditMessage(
+                LOGOUT,
+                LocalDateTime.now(),
+                userMapper.map(user)
         );
     }
 
@@ -135,10 +145,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long validateAccessToken(String token) {
+    public TokenDTO validateAccessToken(String token) {
         jwtService.validateAccessToken(token);
         User user = loadUserByUsername(jwtService.getUserEmailFromAccessToken(token));
-        return user.getId();
+        return TokenDTO.builder()
+                .userRole(user.getRole())
+                .userId(user.getId())
+                .build();
     }
 
     @Override
@@ -169,7 +182,11 @@ public class UserServiceImpl implements UserService {
         accessCodeRepository.save(accessCodeEntity);
 
 
-        rabbitMQService.sendAuthAuditMessage(REQUEST_RESET_PASSWORD, LocalDateTime.now(), email);
+        rabbitMQService.sendAuthAuditMessage(
+                REQUEST_RESET_PASSWORD,
+                LocalDateTime.now(),
+                userMapper.map(user)
+        );
 
         rabbitMQService.sendMailMessage(
                 email,
@@ -208,6 +225,10 @@ public class UserServiceImpl implements UserService {
                 RESET_PASSWORD
         );
 
-        rabbitMQService.sendAuthAuditMessage(RESET_PASSWORD, LocalDateTime.now(), user.getEmail());
+        rabbitMQService.sendAuthAuditMessage(
+                RESET_PASSWORD,
+                LocalDateTime.now(),
+                userMapper.map(user)
+        );
     }
 }

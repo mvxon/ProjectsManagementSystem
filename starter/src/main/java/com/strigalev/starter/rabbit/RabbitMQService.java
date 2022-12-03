@@ -1,9 +1,9 @@
 package com.strigalev.starter.rabbit;
 
 import com.strigalev.starter.dto.AuditDTO;
-import com.strigalev.starter.dto.UserActionMailMessageDTO;
 import com.strigalev.starter.dto.MailMessageDTO;
-import com.strigalev.starter.model.Role;
+import com.strigalev.starter.dto.UserActionMailMessageDTO;
+import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.starter.model.UserAction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -28,14 +28,14 @@ public class RabbitMQService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void sendAuthAuditMessage(UserAction action, LocalDateTime date, String userEmail) {
+    public void sendAuthAuditMessage(UserAction action, LocalDateTime date, UserDTO user) {
         rabbitTemplate.convertAndSend(
                 exchange,
                 routingKey,
                 AuditDTO.builder()
                         .action(action)
                         .date(date)
-                        .actionUserEmail(userEmail)
+                        .actionUser(user)
                         .build()
         );
     }
@@ -43,9 +43,7 @@ public class RabbitMQService {
     public void sendAuditMessage(
             UserAction action,
             LocalDateTime date,
-            String actionUserEmail,
-            Long actionUserId,
-            Role role,
+            UserDTO user,
             Long projectId,
             Long taskId,
             Long actionedUserId
@@ -55,13 +53,11 @@ public class RabbitMQService {
                 routingKey,
                 AuditDTO.builder()
                         .action(action)
-                        .userRole(role)
                         .projectId(projectId)
                         .taskId(taskId)
                         .date(date)
-                        .actionedUserId(actionUserId)
-                        .actionUserEmail(actionUserEmail)
                         .actionedUserId(actionedUserId)
+                        .actionUser(user)
                         .build()
         );
     }
@@ -81,12 +77,13 @@ public class RabbitMQService {
         );
     }
 
-    public void sendActionMailMessage(UserAction action,
-                                      String taskTitle,
-                                      String projectName,
-                                      String managerFnAndEmail,
-                                      String firstName,
-                                      MailMessageDTO mailMessageDTO
+    public void sendActionMailMessage(
+            UserAction action,
+            String taskTitle,
+            String projectName,
+            String managerFnAndEmail,
+            String firstName,
+            MailMessageDTO mailMessageDTO
     ) {
         rabbitTemplate.convertAndSend(exchange,
                 mailRoutingKey,

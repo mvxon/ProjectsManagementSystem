@@ -142,36 +142,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void sendUserTaskAction(UserAction action, Task task) {
-        User principal = getPrincipal();
+        User user = getPrincipal();
         Project project = projectService.getProjectByTask(task);
 
         rabbitMQService
                 .sendAuditMessage(
                         action,
                         LocalDateTime.now(),
-                        principal.getEmail(),
-                        principal.getId(),
-                        principal.getRole(),
+                        userMapper.map(user),
                         project.getId(),
                         task.getId(),
                         null)
         ;
         String projectName = project.getName();
 
-        sendEmailMessageToTaskEmployees(principal, task, action, projectName);
+        sendEmailMessageToTaskEmployees(user, task, action, projectName);
     }
 
     @Override
     public void sendManagerTaskAction(UserAction action, Task task) {
-        User principal = getPrincipal();
+        User manager = getPrincipal();
         Project project = projectService.getProjectByTask(task);
         rabbitMQService
                 .sendAuditMessage(
                         action,
                         LocalDateTime.now(),
-                        principal.getEmail(),
-                        principal.getId(),
-                        principal.getRole(),
+                        userMapper.map(manager),
                         project.getId(),
                         task.getId(),
                         null
@@ -179,14 +175,14 @@ public class UserServiceImpl implements UserService {
 
         String taskTittle = task.getTitle();
 
-        sendEmailMessageToProjectManagers(principal, project, action, taskTittle);
+        sendEmailMessageToProjectManagers(manager, project, action, taskTittle);
 
-        sendEmailMessageToTaskEmployees(principal, task, action, project.getName());
+        sendEmailMessageToTaskEmployees(manager, task, action, project.getName());
     }
 
     @Override
     public void sendManagerProjectAction(UserAction action, Project project, Task task) {
-        User principal = getPrincipal();
+        User manager = getPrincipal();
 
         String taskTittle = task == null ? null : task.getTitle();
         Long taskId = task == null ? null : task.getId();
@@ -195,16 +191,14 @@ public class UserServiceImpl implements UserService {
                 .sendAuditMessage(
                         action,
                         LocalDateTime.now(),
-                        principal.getEmail(),
-                        principal.getId(),
-                        principal.getRole(),
+                        userMapper.map(manager),
                         project.getId(),
                         taskId,
                         null
                 );
 
         if (action != CREATE_PROJECT) {
-            sendEmailMessageToProjectEmployees(principal, project, action, taskTittle);
+            sendEmailMessageToProjectEmployees(manager, project, action, taskTittle);
         }
     }
 
@@ -212,20 +206,21 @@ public class UserServiceImpl implements UserService {
     public void sendManagerAction(UserAction action, Project project, Task task, Long actionedUserId) {
         User manager = getPrincipal();
 
+        String taskTittle = task == null ? null : task.getTitle();
+        Long taskId = task == null ? null : task.getId();
+
         rabbitMQService
                 .sendAuditMessage(
                         action,
                         LocalDateTime.now(),
-                        manager.getEmail(),
-                        manager.getId(),
-                        manager.getRole(),
+                        userMapper.map(manager),
                         project.getId(),
-                        task.getId(),
+                        taskId,
                         actionedUserId
                 );
 
-        sendEmailMessage(manager, action, project.getName(), task.getTitle(), getUserById(actionedUserId));
-        sendEmailMessageToProjectManagers(manager, project, action, task.getTitle());
+        sendEmailMessage(manager, action, project.getName(), taskTittle, getUserById(actionedUserId));
+        sendEmailMessageToProjectManagers(manager, project, action, taskTittle);
     }
 
     private void sendEmailMessageToTaskEmployees(User sender, Task task, UserAction action, String projectName) {
@@ -282,9 +277,7 @@ public class UserServiceImpl implements UserService {
 
     public User getPrincipal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = ((UserDTO) authentication.getPrincipal()).getEmail();
-
-        return getUserByEmail(email);
+        return getUserById((Long) authentication.getPrincipal());
     }
 
 }

@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class GatewayConfig {
     private static final String PROJECTS_SERVICE_PATH = "/projects-service/api/v1/";
     private static final String AUDIT_UNIT_PATH = "/audit-unit/api/v1/";
+    private static final String REPORT_SERVICE_PATH = "/report-service/api/v1/";
 
     @Bean
     @LoadBalanced
@@ -40,10 +41,11 @@ public class GatewayConfig {
                         .filters(filter -> filter.setStatus(HttpStatus.NOT_FOUND))
                         .uri("lb://audit-unit/")
                 )
-                .route("userDetails-route", route -> route
-                        .path(PROJECTS_SERVICE_PATH + "users/userDetails/**")
-                        .filters(filter -> filter.setStatus(HttpStatus.NOT_FOUND))
-                        .uri("lb://projects-service/")
+                .route("report-service-route", route -> route
+                        .path(REPORT_SERVICE_PATH + "reports/**")
+                        .filters(filter ->
+                                (filter.stripPrefix(1)).filter(authFilter.apply(new AuthFilter.Config())))
+                        .uri("lb://report-service/")
                 )
                 .build();
     }

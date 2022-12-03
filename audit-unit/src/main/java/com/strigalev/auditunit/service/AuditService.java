@@ -30,7 +30,8 @@ public class AuditService {
             UserAction action,
             DateIntervalDTO dateInterval
     ) {
-        return auditRepository.findByActionUserIdAndActionAndDateBetween(userId,
+        return auditRepository.findByActionUserIdAndActionAndDateBetween(
+                        userId,
                         action,
                         dateInterval.getFrom(),
                         dateInterval.getTo()

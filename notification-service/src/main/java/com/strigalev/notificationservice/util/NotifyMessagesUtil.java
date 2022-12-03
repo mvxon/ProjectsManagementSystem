@@ -10,7 +10,7 @@ public class NotifyMessagesUtil {
     public static String getAddedToProjectMessage(UserActionMailMessageDTO businessActionMessage) {
         return String.format("What's up, %s,\nYou are added to %s project by %s.",
                 businessActionMessage.getActionedUserFirstName(),
-                businessActionMessage.getTaskTittle(),
+                businessActionMessage.getProjectName(),
                 businessActionMessage.getActionUserFnAndEmail()
         );
     }

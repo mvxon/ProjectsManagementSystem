@@ -1,6 +1,6 @@
 package com.strigalev.auditunit.domain;
 
-import com.strigalev.starter.model.Role;
+import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.starter.model.UserAction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,11 +23,11 @@ public class Audit {
     private String id;
     private UserAction action;
     private LocalDateTime date;
-    private Long actionUserId;
+    private UserDTO actionUser;
     private Long actionedUserId;
-    private Role userRole;
     private Long projectId;
     private Long taskId;
+
 
     @Transient
     private LocalDateTime dateOfDevStart;

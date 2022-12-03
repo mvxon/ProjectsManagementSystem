@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.Optional;
 
@@ -88,16 +90,18 @@ public class JwtServiceImpl implements JwtService {
         tokenRepository.deleteById(getTokenIdFromRefreshToken(refreshToken));
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public TokenDTO generateTokensPair(User user) {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setOwnerId(user.getId());
+
         tokenRepository.save(refreshToken);
         refreshToken.setToken(generateRefreshToken(user, refreshToken));
         tokenRepository.save(refreshToken);
+
         return TokenDTO.builder()
                 .accessToken(generateAccessToken(user))
                 .refreshToken(refreshToken.getToken())
-                .userId(user.getId())
                 .build();
     }
 

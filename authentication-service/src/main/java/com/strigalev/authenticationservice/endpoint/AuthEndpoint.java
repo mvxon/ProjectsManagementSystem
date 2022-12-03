@@ -1,10 +1,8 @@
 package com.strigalev.authenticationservice.endpoint;
 
-import com.strigalev.authenticationservice.domain.AccessCode;
 import com.strigalev.authenticationservice.dto.ResetPasswordDTO;
 import com.strigalev.authenticationservice.dto.SignInDTO;
 import com.strigalev.authenticationservice.dto.SignUpRequest;
-import com.strigalev.authenticationservice.repository.AccessCodeRepository;
 import com.strigalev.authenticationservice.service.UserService;
 import com.strigalev.starter.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
@@ -12,23 +10,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthEndpoint {
     private final UserService userService;
-    private final AccessCodeRepository accessCodeRepository;
 
     @PostMapping("/signIn")
     public ResponseEntity<TokenDTO> signIn(@RequestBody @Valid SignInDTO signInDTO) {
-        return ResponseEntity.ok(userService.login(signInDTO));
+        return ResponseEntity.ok(userService.signIn(signInDTO));
     }
 
     @GetMapping("/logout")
     public void logout(@RequestParam(name = "refreshToken") String refreshToken) {
-        userService.signIn(refreshToken);
+        userService.logout(refreshToken);
     }
 
     @GetMapping("/refreshToken")
@@ -37,7 +33,7 @@ public class AuthEndpoint {
     }
 
     @GetMapping("/validateToken")
-    public Long validateToken(@RequestParam(name = "token") String accessToken) {
+    public TokenDTO validateToken(@RequestParam(name = "token") String accessToken) {
         return userService.validateAccessToken(accessToken);
     }
 
@@ -54,11 +50,6 @@ public class AuthEndpoint {
     @PostMapping("/resetPassword")
     public void resetPassword(@RequestBody @Valid ResetPasswordDTO resetPasswordDTO) {
         userService.resetPassword(resetPasswordDTO);
-    }
-
-    @GetMapping("/asd")
-    public List<AccessCode> get() {
-        return (List<AccessCode>) accessCodeRepository.findAll();
     }
 
 }

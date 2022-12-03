@@ -1,7 +1,6 @@
 package com.strigalev.starter.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.strigalev.starter.model.Role;
 import com.strigalev.starter.model.UserAction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,15 +20,11 @@ public class AuditDTO {
 
     private UserAction action;
     private LocalDateTime date;
-    private Long actionUserId;
-    private String actionUserEmail;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long actionedUserId;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Role userRole;
-
+    private UserDTO actionUser;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long projectId;
 

@@ -21,4 +21,4 @@ spring:
     mongodb:
       host: localhost
       port: 27017
-      database: pms_audit
+      database: pms_reports

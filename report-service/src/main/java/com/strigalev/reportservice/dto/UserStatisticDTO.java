@@ -2,6 +2,7 @@ package com.strigalev.reportservice.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.strigalev.starter.dto.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserStatisticDTO {
-    private Long userId;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String userEmail;
+    private UserDTO user;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer completedTasksCount;

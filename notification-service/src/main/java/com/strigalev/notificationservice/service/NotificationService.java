@@ -4,7 +4,6 @@ import com.strigalev.starter.dto.MailMessageDTO;
 import com.strigalev.starter.dto.UserActionMailMessageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -15,10 +14,6 @@ import static com.strigalev.notificationservice.util.NotifyMessagesUtil.*;
 @RequiredArgsConstructor
 public class NotificationService {
     private final JavaMailSender mailSender;
-
-    @Value("${spring.mail.username}")
-    private String fromEmail;
-
     @RabbitListener(queues = "${spring.rabbitmq.notification-queue}")
     public void receiveAndSend(UserActionMailMessageDTO businessMessage) {
         SimpleMailMessage message = createAndFeelMessageBody(businessMessage);
@@ -114,7 +109,6 @@ public class NotificationService {
         message += "\n\n\nBest regards, Projects Management System (c)";
         mailMessage.setText(message);
         mailMessage.setSubject(subject);
-        mailMessage.setFrom(fromEmail);
         mailMessage.setTo(mailMessageDTO.getToEmail());
 
         return mailMessage;

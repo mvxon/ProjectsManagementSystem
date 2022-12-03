@@ -9,6 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
+import com.strigalev.starter.dto.UserDTO;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,7 +23,6 @@ import java.util.List;
 public class StatisticExcelExporter {
 
     private void writeHeaderLine(XSSFSheet sheet, XSSFWorkbook workbook) {
-
         Row row = sheet.createRow(0);
 
         CellStyle style = workbook.createCellStyle();
@@ -30,10 +31,13 @@ public class StatisticExcelExporter {
         font.setFontHeight(16);
         style.setFont(font);
 
-        createCell(sheet, row, 0, "User ID", style);
-        createCell(sheet, row, 1, "E-mail", style);
-        createCell(sheet, row, 3, "Completed tasks count", style);
-        createCell(sheet, row, 4, "Completion rate", style);
+        int columnCount = 0;
+
+        createCell(sheet, row, columnCount++, "User ID", style);
+        createCell(sheet, row, columnCount++, "E-mail", style);
+        createCell(sheet, row, columnCount++, "Full name", style);
+        createCell(sheet, row, columnCount++, "Completed tasks count", style);
+        createCell(sheet, row, columnCount, "Completion rate", style);
     }
 
     private void createCell(XSSFSheet sheet, Row row, int columnCount, Object value, CellStyle style) {
@@ -60,11 +64,13 @@ public class StatisticExcelExporter {
         for (UserStatisticDTO userStatistic : usersStatistics) {
             Row row = sheet.createRow(rowCount++);
             int columnCount = 0;
+            UserDTO userDTO = userStatistic.getUser();
 
-            createCell(sheet, row, columnCount++, userStatistic.getUserId(), style);
-            createCell(sheet, row, columnCount++, userStatistic.getUserEmail(), style);
-            createCell(sheet, row, columnCount++, userStatistic.getCompletedTasksCount(), style);
-            createCell(sheet, row, columnCount++, userStatistic.getCompletionRate(), style);
+            createCell(sheet, row, columnCount++, userDTO.getId().toString(), style);
+            createCell(sheet, row, columnCount++, userDTO.getEmail(), style);
+            createCell(sheet, row, columnCount++, userDTO.getFirstName() + " " + userDTO.getLastName(), style);
+            createCell(sheet, row, columnCount++, userStatistic.getCompletedTasksCount().toString(), style);
+            createCell(sheet, row, columnCount, userStatistic.getCompletionRate().toString(), style);
         }
     }
 
@@ -74,10 +80,9 @@ public class StatisticExcelExporter {
         XSSFSheet sheet = workbook.createSheet("users_statistics");
         writeHeaderLine(sheet, workbook);
         writeDataLines(usersStatistics, workbook, sheet);
-        String fileName = "/tmp/fileName.xlsx";
+        String fileName = "/tmp/statistics.xlsx";
 
         File file = new File(fileName);
-
         try {
             FileOutputStream outputStream = new FileOutputStream(file);
             workbook.write(outputStream);
@@ -86,7 +91,6 @@ public class StatisticExcelExporter {
 
         } catch (IOException e) {
             log.error("IO exception  : fileName {}  Exception details:{} ", fileName, e);
-
         }
         return file;
     }
