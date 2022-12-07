@@ -3,16 +3,18 @@ package com.strigalev.projectsservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.strigalev.projectsservice.domain.ProjectStatus;
-import com.strigalev.projectsservice.validation.annotation.Date;
 import com.strigalev.projectsservice.validation.annotation.ProjectName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Set;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +24,7 @@ public class ProjectDTO {
 
     private Long id;
 
-    private Set<ProjectStatus> statuses;
+    private ProjectStatus status;
 
     @ProjectName
     @NotEmpty(message = "Name should not be empty")
@@ -44,10 +46,11 @@ public class ProjectDTO {
     private String description;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String creationDate;
+    private LocalDateTime creationDate;
 
-    @NotEmpty(message = "Deadline date should not be empty")
-    @Date
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String deadLineDate;
+    @NotNull(message = "Deadline date should not be null")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Future(message = "Deadline date should be in future")
+    private LocalDateTime deadLineDate;
 }

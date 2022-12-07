@@ -15,10 +15,6 @@ public interface UserService {
 
     void deleteUser(Long id);
 
-    UserDTO getUserDtoById(Long id);
-
-    User getUserByEmail(String email);
-
     Page<UserDTO> getUsersPageByProjectId(Long projectId, Pageable pageable);
 
     Page<UserDTO> getUsersPageByTaskId(Long taskId, Pageable pageable);
@@ -26,8 +22,6 @@ public interface UserService {
     Page<UserDTO> getUsersPageByProjectName(String projectName, Pageable pageable);
 
     UserDTO getUserDto(Long id);
-
-    boolean isPrincipalHaveTask(Long taskId);
 
     List<UserDTO> getUsersDtoByFullName(String firstName, String lastName);
 

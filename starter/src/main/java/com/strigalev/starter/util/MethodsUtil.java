@@ -51,10 +51,6 @@ public final class MethodsUtil {
         return String.format("Task with %oid is already in %s status", taskId, status);
     }
 
-    public static String getTaskHasNoUserWithRoleMessage(Long taskId, Role role) {
-        return String.format("Task with %oid does not have user with role %s", taskId, role);
-    }
-
     public static String getTaskIsAlreadyHasUserWithRoleMessage(Long taskId, Role role) {
         return String.format("Task with %oid is already have user with role %s", taskId, role);
     }
@@ -67,7 +63,4 @@ public final class MethodsUtil {
         return String.format("User %oid is already have assigned task with %oid", userId, taskId);
     }
 
-    public static String getUserHasNoAssignedTasksMessage(Long userId) {
-        return String.format("User %oid don't have assigned tasks", userId);
-    }
 }

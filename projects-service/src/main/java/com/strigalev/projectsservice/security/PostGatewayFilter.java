@@ -8,8 +8,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Collections;
 
 
@@ -20,7 +22,7 @@ public class PostGatewayFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain
-    ) {
+    ) throws ServletException, IOException {
         try {
             Long userId = Long.parseLong(request.getHeader("X-auth-user-id"));
             Role role = Role.valueOf(request.getHeader("X-auth-user-role"));
@@ -33,7 +35,8 @@ public class PostGatewayFilter extends OncePerRequestFilter {
             upat.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(upat);
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
+
+        } catch (IllegalArgumentException e) {
             response.setStatus(403);
         }
 

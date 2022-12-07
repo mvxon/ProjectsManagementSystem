@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -30,8 +29,8 @@ public class Task {
     private Long projectId;
 
     @CreationTimestamp
-    private LocalDate creationDate;
-    private LocalDate deadLineDate;
+    private LocalDateTime creationDate;
+    private LocalDateTime deadLineDate;
 
     @UpdateTimestamp
     private LocalDateTime updateDate;

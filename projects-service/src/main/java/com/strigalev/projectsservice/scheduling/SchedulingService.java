@@ -14,11 +14,11 @@ public class SchedulingService {
     private final Scheduler scheduler;
 
     @Value("${application.tasks.archiving-period-days}")
-    private long archivingTimeDays;
+    private long tasksArchivingDays;
 
-    public void schedule(Long taskId) {
+    public void scheduleTaskArchiving(Long taskId) {
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(archivingTimeDays);
+        ZonedDateTime zonedDateTime = ZonedDateTime.now().plusDays(tasksArchivingDays);
 
         JobDataMap dataMap = new JobDataMap();
         dataMap.put("taskId", taskId);

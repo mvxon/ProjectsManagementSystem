@@ -21,6 +21,7 @@ public class ArchiveJob extends QuartzJobBean {
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         JobDataMap mergedJobDataMap = context.getMergedJobDataMap();
         Long taskId = (Long) mergedJobDataMap.get("taskId");
+
         taskRepository.updateTaskStatus(taskId, TaskStatus.ARCHIVED);
     }
 }

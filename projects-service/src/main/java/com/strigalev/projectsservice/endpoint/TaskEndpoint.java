@@ -1,12 +1,12 @@
 package com.strigalev.projectsservice.endpoint;
 
 import com.strigalev.projectsservice.domain.TaskStatus;
-import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
-import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
 import com.strigalev.starter.dto.ApiResponseEntity;
+import com.strigalev.starter.dto.DateIntervalDTO;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,11 +15,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 
 import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -79,10 +81,17 @@ public class TaskEndpoint {
     @GetMapping("/byProjectId/{projectId}/byCreationDate")
     public ResponseEntity<Page<TaskDTO>> getProjectTasks(
             @PathVariable Long projectId,
-            @RequestBody @Valid DateDTO dateDTO,
+            @RequestParam(name = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(name = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(taskService.getTasksPageByProjectIdAndCreationDate(pageable, dateDTO, projectId));
+        return ResponseEntity.ok(taskService.getTasksPageByProjectIdAndCreationDate(
+                pageable,
+                DateIntervalDTO.builder()
+                        .from(from)
+                        .to(to)
+                        .build(),
+                projectId));
     }
 
     @PostMapping("/{projectId}")
@@ -134,11 +143,6 @@ public class TaskEndpoint {
     public void updateTask(@PathVariable Long id, @RequestBody @Valid TaskDTO taskDTO) {
         taskDTO.setId(id);
         taskService.updateTask(taskDTO);
-    }
-
-    @PatchMapping("/{id}")
-    public void setTaskStatus(@PathVariable Long id, @RequestParam("status") String status) {
-        taskService.setTaskStatus(id, TaskStatus.valueOf(status.toUpperCase()));
     }
 
     @PatchMapping("/setOpen/{taskId}")

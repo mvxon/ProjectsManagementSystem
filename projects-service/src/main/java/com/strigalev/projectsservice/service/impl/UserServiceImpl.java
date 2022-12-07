@@ -10,7 +10,6 @@ import com.strigalev.projectsservice.service.UserService;
 import com.strigalev.starter.dto.MailMessageDTO;
 import com.strigalev.starter.dto.UserDTO;
 import com.strigalev.starter.exception.ResourceNotFoundException;
-import com.strigalev.starter.model.Role;
 import com.strigalev.starter.model.UserAction;
 import com.strigalev.starter.rabbit.RabbitMQService;
 import org.springframework.context.annotation.Lazy;
@@ -63,20 +62,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUserDtoById(Long id) {
-        return userMapper.map(getUserById(id));
-    }
-
-    @Override
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(getUserWithEmailNotExistsMessage(email))
-                );
-    }
-
-
-    @Override
     public Page<UserDTO> getUsersPageByProjectId(Long projectId, Pageable pageable) {
         Page<User> users = userRepository.findAllByProjectId(pageable, projectId);
         if (users.getContent().isEmpty()) {
@@ -111,19 +96,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getUserDto(Long id) {
         return mapUser(getUserById(id));
-    }
-
-    @Override
-    public boolean isPrincipalHaveTask(Long taskId) {
-        User user = getPrincipal();
-        if (user.getRole() == Role.ADMIN || user.getRole() == MANAGER) {
-            return true;
-        }
-        if (getUserWorkingTasksIds(user.getId()).contains(taskId)) {
-            return true;
-        }
-
-        throw new ResourceNotFoundException(getUserNotAssignedWithTaskMessage(user.getId(), taskId));
     }
 
     @Override
@@ -265,14 +237,6 @@ public class UserServiceImpl implements UserService {
                         .toEmail(actionedUser.getEmail())
                         .build()
         );
-    }
-
-    private List<Long> getUserWorkingTasksIds(Long id) {
-        List<Long> tasksIds = userRepository.getTasksIdsByUserId(id);
-        if (tasksIds.isEmpty()) {
-            throw new ResourceNotFoundException(getUserHasNoAssignedTasksMessage(id));
-        }
-        return tasksIds;
     }
 
     public User getPrincipal() {

@@ -6,19 +6,17 @@ import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import com.strigalev.projectsservice.exception.EmployeeException;
-import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.projectsservice.mapper.ProjectListMapper;
 import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.UserService;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 import static com.strigalev.projectsservice.domain.ProjectStatus.CREATED;
 import static com.strigalev.starter.model.UserAction.*;
@@ -65,7 +63,6 @@ public class ProjectServiceImpl implements ProjectService {
     public Long addTaskToProject(Long projectId, Task task) {
         Project project = getProjectById(projectId);
         project.getTasks().add(task);
-        projectRepository.save(project);
 
         userService.sendManagerProjectAction(ADD_TASK_TO_PROJECT, project, task);
 
@@ -76,7 +73,6 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public Long createProject(ProjectDTO projectDTO) {
         Project project = projectMapper.map(projectDTO);
-        project.setDeadLineDate(LocalDate.parse(projectDTO.getDeadLineDate()));
         project.setStatus(CREATED);
 
         userService.sendManagerProjectAction(CREATE_PROJECT, projectRepository.save(project), null);
@@ -91,7 +87,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setDeleted(true);
         project.getTasks().forEach(task -> task.setDeleted(true));
 
-        userService.sendManagerProjectAction(DELETE_PROJECT, projectRepository.save(project), null);
+        userService.sendManagerProjectAction(DELETE_PROJECT, project, null);
     }
 
     @Override
@@ -99,8 +95,6 @@ public class ProjectServiceImpl implements ProjectService {
     public void setProjectStatus(Long projectId, ProjectStatus status) {
         Project project = getProjectById(projectId);
         project.setStatus(status);
-
-        projectRepository.save(project);
     }
 
     @Override
@@ -120,7 +114,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project savedProject = getProjectById(projectDTO.getId());
         projectMapper.updateProjectFromDto(projectDTO, savedProject);
 
-        userService.sendManagerProjectAction(UPDATE_PROJECT, projectRepository.save(savedProject), null);
+        userService.sendManagerProjectAction(UPDATE_PROJECT, savedProject, null);
     }
 
     @Override
@@ -136,6 +130,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public void addUserToProject(Long projectId, Long userId) {
         Project project = getProjectById(projectId);
+
         if (!project.getEmployees().add(userService.getUserById(userId))) {
             throw new EmployeeException(
                     String.format("User with %oid is already working at %oid project", userId, projectId));
@@ -143,8 +138,6 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         userService.sendManagerAction(ADD_USER_TO_PROJECT, project, null, userId);
-
-        projectRepository.save(project);
     }
 
     @Override

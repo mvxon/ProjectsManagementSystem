@@ -3,7 +3,6 @@ package com.strigalev.projectsservice.service.impl;
 import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.domain.TaskStatus;
 import com.strigalev.projectsservice.domain.User;
-import com.strigalev.projectsservice.dto.DateDTO;
 import com.strigalev.projectsservice.dto.TaskDTO;
 import com.strigalev.projectsservice.exception.EmployeeException;
 import com.strigalev.projectsservice.exception.InvalidStatusException;
@@ -14,6 +13,7 @@ import com.strigalev.projectsservice.scheduling.SchedulingService;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.projectsservice.service.TaskService;
 import com.strigalev.projectsservice.service.UserService;
+import com.strigalev.starter.dto.DateIntervalDTO;
 import com.strigalev.starter.exception.ResourceNotFoundException;
 import com.strigalev.starter.model.Role;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +22,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
 import java.util.Set;
 
 import static com.strigalev.projectsservice.domain.TaskStatus.*;
-import static com.strigalev.starter.model.Role.DEVELOPER;
-import static com.strigalev.starter.model.Role.TESTER;
+import static com.strigalev.starter.model.Role.*;
 import static com.strigalev.starter.model.UserAction.*;
 import static com.strigalev.starter.util.MethodsUtil.*;
 
@@ -60,7 +57,7 @@ public class TaskServiceImpl implements TaskService {
         Task savedTask = getTaskById(taskDTO.getId());
         taskMapper.updateTaskFromDto(taskDTO, savedTask);
 
-        userService.sendManagerTaskAction(UPDATE_TASK, taskRepository.save(savedTask));
+        userService.sendManagerTaskAction(UPDATE_TASK, savedTask);
     }
 
     @Override
@@ -69,25 +66,15 @@ public class TaskServiceImpl implements TaskService {
         Task task = getTaskById(id);
         task.setDeleted(true);
 
-        userService.sendManagerTaskAction(DELETE_TASK, taskRepository.save(task));
-    }
-
-    @Override
-    @Transactional
-    public void setTaskStatus(Long taskId, TaskStatus status) {
-        Task task = getTaskById(taskId);
-        task.setStatus(status);
-
-        taskRepository.save(task);
+        userService.sendManagerTaskAction(DELETE_TASK, task);
     }
 
     @Override
     public Task createTask(TaskDTO taskDTO) {
         Task task = taskMapper.map(taskDTO);
-        task.setDeadLineDate(LocalDate.parse(taskDTO.getDeadLineDate()));
         task.setStatus(CREATED);
 
-        return task;
+        return taskRepository.save(task);
     }
 
     @Override
@@ -110,38 +97,19 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Page<TaskDTO> getTasksPageByProjectIdAndCreationDate(Pageable pageable, DateDTO dateDTO, Long projectId) {
+    public Page<TaskDTO> getTasksPageByProjectIdAndCreationDate(
+            Pageable pageable,
+            DateIntervalDTO interval,
+            Long projectId
+    ) {
         Page<Task> tasks;
-        LocalDate searchingDate;
 
-        if (dateDTO.getYear() == null) {
-            throw new DateTimeException("INVALID DATE");
-        }
-
-        if (dateDTO.getMonth() == null && dateDTO.getDay() == null) { // by year
-            searchingDate = LocalDate.of(dateDTO.getYear(), 1, 1);
-            tasks = taskRepository.findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(
-                    pageable,
-                    searchingDate,
-                    searchingDate.plusYears(1),
-                    projectId
-            );
-        } else if (dateDTO.getDay() == null) { // by month
-            searchingDate = LocalDate.of(dateDTO.getYear(), dateDTO.getMonth(), 1);
-            tasks = taskRepository.findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(
-                    pageable,
-                    searchingDate,
-                    searchingDate.plusMonths(1),
-                    projectId
-            );
-        } else { // full date
-            searchingDate = LocalDate.of(dateDTO.getYear(), dateDTO.getMonth(), dateDTO.getDay());
-            tasks = taskRepository.findAllByCreationDateAndProjectIdAndDeletedIsFalse(
-                    pageable,
-                    searchingDate,
-                    projectId
-            );
-        }
+        tasks = taskRepository.findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(
+                pageable,
+                interval.getFrom(),
+                interval.getTo(),
+                projectId
+        );
 
         if (tasks.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
@@ -172,23 +140,24 @@ public class TaskServiceImpl implements TaskService {
         User user = userService.getUserById(userId);
         Set<User> employees = task.getEmployees();
 
-        if (projectService.isUserAndTaskMatchesOnProject(task, user) && !isTaskHasUserWithRole(task, user.getRole())) {
+        if (projectService.isUserAndTaskMatchesOnProject(task, user) && isTaskNotHasUserWithRole(task, user.getRole())) {
             if (employees.add(user)) {
-                employees.add(userService.getPrincipal());
+                employees.add(userService.getPrincipal()); // add principal(manager/admin) to track task
             } else {
                 throw new InvalidStatusException(getUserIsAlreadyAssignedWithTaskMessage(userId, taskId));
             }
-        } else {
-            throw new EmployeeException(getTaskIsAlreadyHasUserWithRoleMessage(taskId, user.getRole()));
         }
-
         userService.sendManagerAction(ASSIGN_TASK_TO_USER, projectService.getProjectByTask(task), task, userId);
 
         taskRepository.save(task);
     }
 
-    private boolean isTaskHasUserWithRole(Task task, Role role) {
-        return task.getEmployees().stream().anyMatch(user -> user.getRole() == role);
+    private boolean isTaskNotHasUserWithRole(Task task, Role role) {
+        if (task.getEmployees().stream().noneMatch(user -> user.getRole() == role)) {
+            return true;
+        } else {
+            throw new EmployeeException(getTaskIsAlreadyHasUserWithRoleMessage(task.getId(), role));
+        }
     }
 
     @Override
@@ -196,9 +165,12 @@ public class TaskServiceImpl implements TaskService {
     public void unAssignTaskToUser(Long taskId, Long userId) {
         Task task = getTaskById(taskId);
         User user = userService.getUserById(userId);
+        TaskStatus status = task.getStatus();
 
 
-        if (task.getStatus() == DEVELOPING && user.getRole() == DEVELOPER) {
+        if ((status.ordinal() >= DEVELOPING.ordinal() && user.getRole() == DEVELOPER) ||
+                (status.ordinal() >= TESTING.ordinal() && user.getRole() == TESTER)
+        ) {
             throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
         if (!task.getEmployees().remove(user)) {
@@ -216,35 +188,31 @@ public class TaskServiceImpl implements TaskService {
     public TaskDTO setTaskDeveloping(Long taskId) {
         Task task = getTaskById(taskId);
 
-        if (task.getStatus() == OPEN) {
-            if (isTaskHasUserWithRole(task, DEVELOPER)) {
-                if (userService.isPrincipalHaveTask(taskId)) {
-                    setTaskStatus(taskId, DEVELOPING);
+        if (isPrincipalHaveTask(task)) {
+            if (task.getStatus() == OPEN) {
+                task.setStatus(DEVELOPING);
 
-                    userService.sendUserTaskAction(TAKE_TASK_FOR_DEVELOPING, task);
-                }
+                userService.sendUserTaskAction(TAKE_TASK_FOR_DEVELOPING, task);
             } else {
-                throw new EmployeeException(getTaskHasNoUserWithRoleMessage(taskId, DEVELOPER));
+                throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
             }
-        } else {
-            throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
-        return getTaskDtoById(taskId);
+        return taskMapper.map(task);
     }
 
     @Override
     @Transactional
     public void setTaskCompleted(Long taskId) {
         Task task = getTaskById(taskId);
-        if (task.getStatus() == DEVELOPING) {
-            if (userService.isPrincipalHaveTask(taskId)) {
 
-                setTaskStatus(taskId, COMPLETED);
+        if (isPrincipalHaveTask(task)) {
+            if (task.getStatus() == DEVELOPING) {
+                task.setStatus(COMPLETED);
 
                 userService.sendUserTaskAction(COMPLETED_TASK, task);
+            } else {
+                throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
             }
-        } else {
-            throw new InvalidStatusException(getTaskIsAlreadyInStatusMessage(taskId, task.getStatus().name()));
         }
     }
 
@@ -253,18 +221,13 @@ public class TaskServiceImpl implements TaskService {
     public TaskDTO setTaskTesting(Long taskId) {
         Task task = getTaskById(taskId);
 
-        if (task.getStatus() == COMPLETED) {
-            if (isTaskHasUserWithRole(task, TESTER)) {
-                if (userService.isPrincipalHaveTask(taskId)) {
+        if (isPrincipalHaveTask(task)) {
+            if (task.getStatus() == COMPLETED) {
+                task.setStatus(TESTING);
 
-                    setTaskStatus(taskId, TESTING);
+                userService.sendUserTaskAction(TAKE_TASK_FOR_TESTING, task);
 
-                    userService.sendUserTaskAction(TAKE_TASK_FOR_TESTING, task);
-
-                    return getTaskDtoById(taskId);
-                }
-            } else {
-                throw new EmployeeException(getTaskHasNoUserWithRoleMessage(taskId, TESTER));
+                return taskMapper.map(task);
             }
         }
         throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, COMPLETED.name()));
@@ -275,16 +238,15 @@ public class TaskServiceImpl implements TaskService {
     public void setTaskTested(Long taskId) {
         Task task = getTaskById(taskId);
 
-        if (task.getStatus() == TESTING) {
-            if (userService.isPrincipalHaveTask(taskId)) {
-
-                setTaskStatus(taskId, TESTED);
+        if (isPrincipalHaveTask(task)) {
+            if (task.getStatus() == TESTING) {
+                task.setStatus(TESTED);
 
                 userService.sendUserTaskAction(COMPLETED_TASK_TESTING, task);
 
+            } else {
+                throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, TESTING.name()));
             }
-        } else {
-            throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, TESTING.name()));
         }
     }
 
@@ -293,18 +255,30 @@ public class TaskServiceImpl implements TaskService {
     public void setTaskDocumented(Long taskId) {
         Task task = getTaskById(taskId);
 
-        if (task.getStatus() == TESTED) {
-            if (userService.isPrincipalHaveTask(taskId)) {
-
-                setTaskStatus(taskId, DOCUMENTED);
+        if (isPrincipalHaveTask(task)) {
+            if (task.getStatus() == TESTED) {
+                task.setStatus(DOCUMENTED);
 
                 userService.sendUserTaskAction(SET_TASK_DOCUMENTED, task);
 
-                schedulingService.schedule(taskId);
+                schedulingService.scheduleTaskArchiving(taskId);
+            } else {
+                throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, TESTED.name()));
             }
-        } else {
-            throw new InvalidStatusException(getTaskIsNotInStatusMessage(taskId, TESTED.name()));
         }
     }
 
+    public boolean isPrincipalHaveTask(Task task) {
+        User principal = userService.getPrincipal();
+
+        if (principal.getRole() == Role.ADMIN || principal.getRole() == MANAGER) {
+            return true;
+        }
+
+        if (task.getEmployees().contains(principal)) {
+            return true;
+        } else {
+            throw new ResourceNotFoundException(getUserNotAssignedWithTaskMessage(principal.getId(), task.getId()));
+        }
+    }
 }

@@ -18,7 +18,7 @@ public class ApiResponseEntity {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Object object;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private HttpStatus status;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

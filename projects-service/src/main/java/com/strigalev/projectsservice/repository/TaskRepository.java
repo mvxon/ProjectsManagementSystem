@@ -7,10 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
@@ -23,17 +22,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     Page<Task> findAllByProjectIdAndStatusAndDeletedIsFalse(Pageable pageable, Long projectId, TaskStatus status);
 
     Page<Task> findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(Pageable pageable,
-                                                                         LocalDate startDate,
-                                                                         LocalDate endDate,
+                                                                         LocalDateTime from,
+                                                                         LocalDateTime to,
                                                                          Long projectId);
-
-    Page<Task> findAllByCreationDateAndProjectIdAndDeletedIsFalse(Pageable pageable,
-                                                                  LocalDate creationDate,
-                                                                  Long projectId
-    );
-
-    @Query(value = "SELECT projectId FROM Task WHERE id = :id")
-    Long findProjectIdById(@Param("id") Long id);
 
     @Modifying
     @Transactional
