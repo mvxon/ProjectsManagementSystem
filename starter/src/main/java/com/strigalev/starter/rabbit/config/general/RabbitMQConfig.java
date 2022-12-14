@@ -1,4 +1,4 @@
-package com.strigalev.starter.rabbit;
+package com.strigalev.starter.rabbit.config.general;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
@@ -26,48 +26,9 @@ public class RabbitMQConfig {
     @Value("${spring.rabbitmq.exchange}")
     private String exchange;
 
-    @Value("${spring.rabbitmq.audit-queue}")
-    private String auditQueue;
-
-    @Value("${spring.rabbitmq.notification-queue}")
-    private String mailQueue;
-    @Value("${spring.rabbitmq.audit-routing-key}")
-    private String auditRoutingKey;
-
-    @Value("${spring.rabbitmq.notification-routing-key}")
-    private String notificationRoutingKey;
-
-    @Bean
-    Queue queue() {
-        return new Queue(auditQueue, true);
-    }
-
-    @Bean
-    Queue mailQueue() {
-        return new Queue(mailQueue, true);
-    }
-
     @Bean
     Exchange exchange() {
         return ExchangeBuilder.directExchange(exchange).durable(true).build();
-    }
-
-    @Bean
-    Binding binding() {
-        return BindingBuilder
-                .bind(queue())
-                .to(exchange())
-                .with(auditRoutingKey)
-                .noargs();
-    }
-
-    @Bean
-    Binding notificationBinding() {
-        return BindingBuilder
-                .bind(mailQueue())
-                .to(exchange())
-                .with(notificationRoutingKey)
-                .noargs();
     }
 
     @Bean

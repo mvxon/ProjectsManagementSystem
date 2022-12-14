@@ -14,19 +14,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Date;
 import java.util.Optional;
 
 @Service
 public class JwtServiceImpl implements JwtService {
-    static final String issuer = "Projects-Management-System";
+    private static final String issuer = "Projects-Management-System";
     private final long accessTokenExpirationMs;
     private final long refreshTokenExpirationMs;
     private final Algorithm accessTokenAlgorithm;
     private final Algorithm refreshTokenAlgorithm;
-    private final JWTVerifier accessTokenVerifier;
     private final JWTVerifier refreshTokenVerifier;
     private final TokenRepository tokenRepository;
 
@@ -35,15 +34,13 @@ public class JwtServiceImpl implements JwtService {
                           @Value("${jwt.refreshTokenSecret}") String refreshTokenSecret,
                           @Value("${jwt.refreshTokenExpirationDays}") int refreshTokenExpirationDays,
                           @Value("${jwt.accessTokenExpirationMinutes}") int accessTokenExpirationMinutes,
-                          TokenRepository tokenRepository) {
+                          TokenRepository tokenRepository
+    ) {
         accessTokenExpirationMs = (long) accessTokenExpirationMinutes * 60 * 1000;
         refreshTokenExpirationMs = (long) refreshTokenExpirationDays * 24 * 60 * 60 * 1000;
         accessTokenAlgorithm = Algorithm.HMAC512(accessTokenSecret);
         refreshTokenAlgorithm = Algorithm.HMAC512(refreshTokenSecret);
         this.tokenRepository = tokenRepository;
-        accessTokenVerifier = JWT.require(accessTokenAlgorithm)
-                .withIssuer(issuer)
-                .build();
         refreshTokenVerifier = JWT.require(refreshTokenAlgorithm)
                 .withIssuer(issuer)
                 .build();
@@ -54,6 +51,7 @@ public class JwtServiceImpl implements JwtService {
                 .withIssuer(issuer)
                 .withSubject(user.getEmail())
                 .withClaim("role", user.getRole().toString())
+                .withClaim("userId", user.getId())
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(new Date().getTime() + accessTokenExpirationMs))
                 .sign(accessTokenAlgorithm);
@@ -67,14 +65,6 @@ public class JwtServiceImpl implements JwtService {
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date((new Date()).getTime() + refreshTokenExpirationMs))
                 .sign(refreshTokenAlgorithm);
-    }
-
-    private Optional<DecodedJWT> decodeAccessToken(String token) {
-        try {
-            return Optional.of(accessTokenVerifier.verify(token));
-        } catch (JWTVerificationException e) {
-            throw new BadCredentialsException("Invalid access token");
-        }
     }
 
     private Optional<DecodedJWT> decodeRefreshToken(String token) {
@@ -105,19 +95,11 @@ public class JwtServiceImpl implements JwtService {
                 .build();
     }
 
-    public void validateAccessToken(String token) {
-        decodeAccessToken(token);
-    }
-
     public void validateRefreshToken(String token) {
         decodeRefreshToken(token);
         if (!tokenRepository.existsById(getTokenIdFromRefreshToken(token))) {
             throw new BadCredentialsException("Invalid refresh token");
         }
-    }
-
-    public String getUserEmailFromAccessToken(String token) {
-        return decodeAccessToken(token).get().getSubject();
     }
 
     public String getUserEmailFromRefreshToken(String token) {

@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @EnableEurekaClient
 @EnableFeignClients
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.strigalev.starter.jwt", "com.strigalev.reportservice"})
 public class ReportServiceApplication {
 
     public static void main(String[] args) {

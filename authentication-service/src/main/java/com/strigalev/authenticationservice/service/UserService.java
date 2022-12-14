@@ -16,13 +16,9 @@ public interface UserService extends UserDetailsService {
 
     TokenDTO updateRefreshToken(String refreshToken);
 
-    TokenDTO validateAccessToken(String token);
-
     boolean existsByEmail(String email);
 
     void createAndSendAccessCode(String email);
-
-    void setUserUnActive(String email);
 
     void resetPassword(ResetPasswordDTO resetPasswordDTO);
 }

@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 
 public final class MethodsUtil {
+
     public static String getBindingResultErrors(@NotNull BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
             return "";
@@ -15,7 +16,9 @@ public final class MethodsUtil {
         StringBuilder errors = new StringBuilder();
         for (FieldError fieldError : bindingResult.getFieldErrors()) {
             if (bindingResult.getFieldErrors().indexOf(fieldError) == bindingResult.getFieldErrors().size() - 1) {
-                errors.append(fieldError.getField()).append(" : ").append(fieldError.getDefaultMessage());
+                errors
+                        .append(fieldError.getField()).append(" : ")
+                        .append(fieldError.getDefaultMessage());
                 return errors.toString();
             }
             errors.append(fieldError.getField()).append(" : ").append(fieldError.getDefaultMessage()).append(", ");

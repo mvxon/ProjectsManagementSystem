@@ -21,5 +21,3 @@ spring:
     exchange: pms.exchange
     audit-routing-key: audit.routingKey
     audit-queue: audit.queue
-    notification-queue: notification.queue
-    notification-routing-key: notification.routingKey

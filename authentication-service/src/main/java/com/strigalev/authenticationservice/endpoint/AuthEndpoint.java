@@ -32,11 +32,6 @@ public class AuthEndpoint {
         return ResponseEntity.ok(userService.updateRefreshToken(refreshToken));
     }
 
-    @GetMapping("/validateToken")
-    public TokenDTO validateToken(@RequestParam(name = "token") String accessToken) {
-        return userService.validateAccessToken(accessToken);
-    }
-
     @PostMapping("/signUp")
     public ResponseEntity<TokenDTO> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
         return ResponseEntity.ok(userService.signUp(signUpRequest));

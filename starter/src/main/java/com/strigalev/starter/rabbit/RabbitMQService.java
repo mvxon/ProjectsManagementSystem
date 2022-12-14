@@ -19,10 +19,10 @@ public class RabbitMQService {
     @Value("${spring.rabbitmq.exchange}")
     private String exchange;
 
-    @Value("${spring.rabbitmq.audit-routing-key}")
+    @Value("${spring.rabbitmq.audit-routing-key:#{null}}")
     private String routingKey;
 
-    @Value("${spring.rabbitmq.notification-routing-key}")
+    @Value("${spring.rabbitmq.notification-routing-key:#{null}}")
     private String mailRoutingKey;
 
 

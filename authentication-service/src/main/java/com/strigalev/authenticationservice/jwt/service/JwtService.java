@@ -14,11 +14,7 @@ public interface JwtService {
 
     TokenDTO generateTokensPair(User user);
 
-    void validateAccessToken(String token);
-
     void validateRefreshToken(String token);
-
-    String getUserEmailFromAccessToken(String token);
 
     String getUserEmailFromRefreshToken(String token);
 

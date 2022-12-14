@@ -73,15 +73,6 @@ public class UserServiceImpl implements UserService {
                 );
     }
 
-    @Transactional
-    public void setUserUnActive(String email) {
-        User user = loadUserByUsername(email);
-        user.setActive(false);
-
-        userRepository.save(user);
-    }
-
-
     @Override
     @Transactional
     public TokenDTO signUp(SignUpRequest signUpRequest) {
@@ -142,16 +133,6 @@ public class UserServiceImpl implements UserService {
         User user = loadUserByUsername(jwtService.getUserEmailFromRefreshToken(refreshToken));
 
         return jwtService.generateTokensPair(user);
-    }
-
-    @Override
-    public TokenDTO validateAccessToken(String token) {
-        jwtService.validateAccessToken(token);
-        User user = loadUserByUsername(jwtService.getUserEmailFromAccessToken(token));
-        return TokenDTO.builder()
-                .userRole(user.getRole())
-                .userId(user.getId())
-                .build();
     }
 
     @Override
