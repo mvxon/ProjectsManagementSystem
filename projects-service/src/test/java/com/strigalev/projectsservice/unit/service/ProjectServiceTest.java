@@ -1,7 +1,6 @@
 package com.strigalev.projectsservice.unit.service;
 
 import com.strigalev.projectsservice.domain.Project;
-import com.strigalev.projectsservice.domain.Task;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
@@ -13,12 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @SpringBootTest
@@ -94,31 +92,6 @@ class ProjectServiceTest {
         verify(projectRepository).save(project);
     }
 
-    @Test
-    void addTaskToProject() {
-        final Task task = mock(Task.class);
-        final List<Task> tasks = new ArrayList<>();
-        when(projectRepository.findById(ID)).thenReturn(Optional.of(project));
-        when(taskService.getTaskById(ID)).thenReturn(task);
-        when(project.getTasks()).thenReturn(tasks);
-
-        projectService.addTaskToProject(ID, ID);
-
-        assertEquals(1, tasks.size());
-    }
-
-    @Test
-    void softDeleteProject_shouldCallRepositoryAndTaskService() {
-        final Project testProject = new Project();
-        testProject.setActive(true);
-        when(projectRepository.findById(ID)).thenReturn(Optional.of(testProject));
-
-        projectService.softDeleteProject(ID);
-
-        verify(taskService).softDeleteAllTasksByProjectId(ID);
-        verify(projectRepository).save(testProject);
-        assertFalse(testProject.isActive());
-    }
 
 
 

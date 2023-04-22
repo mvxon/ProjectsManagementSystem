@@ -1,0 +1,27 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+server:
+  port: 0
+
+spring:
+  application.name: report-service
+  mail:
+    port: 587
+    host: smtp.gmail.com
+    username: pmsystem666@gmail.com
+    password: acqphrbrzwjorpqx
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: pms_reports
+
+jwt:
+  accessTokenSecret: salam

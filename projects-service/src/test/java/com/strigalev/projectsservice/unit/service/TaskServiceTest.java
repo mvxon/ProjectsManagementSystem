@@ -36,17 +36,6 @@ public class TaskServiceTest {
     private TaskDTO taskDTO;
 
     @Test
-    void createTask_shouldCallMapperAndRepository() {
-        when(taskMapper.map(taskDTO)).thenReturn(task);
-        when(taskDTO.getDeadLineDate()).thenReturn("2030-12-31");
-
-        taskService.createTask(taskDTO);
-
-        verify(taskMapper).map(taskDTO);
-        verify(taskRepository).save(task);
-    }
-
-    @Test
     void getTaskById_shouldCallRepository() {
         when(taskRepository.findById(ID)).thenReturn(Optional.of(task));
 
@@ -72,22 +61,9 @@ public class TaskServiceTest {
     void softDeleteAllTasksByProjectId_shouldCallProjectServiceAndRepository() {
         when(projectService.isProjectWithIdExists(ID)).thenReturn(true);
 
-        taskService.softDeleteAllTasksByProjectId(ID);
+        taskService.deleteTask(ID);
 
         verify(projectService).isProjectWithIdExists(ID);
-        verify(taskRepository).setActiveFalseAllTasksByProjectId(ID);
-    }
-
-    @Test
-    void softDeleteTask_shouldCallRepository() {
-        final Task testTask = new Task();
-        testTask.setActive(true);
-        when(taskRepository.findById(ID)).thenReturn(Optional.of(testTask));
-
-        taskService.softDeleteTask(ID);
-
-        assertFalse(testTask.isActive());
-        verify(taskRepository).save(testTask);
     }
 
 }

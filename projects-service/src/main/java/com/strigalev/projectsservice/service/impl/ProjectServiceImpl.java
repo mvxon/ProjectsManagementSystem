@@ -1,52 +1,55 @@
 package com.strigalev.projectsservice.service.impl;
 
 import com.strigalev.projectsservice.domain.Project;
+import com.strigalev.projectsservice.domain.ProjectStatus;
+import com.strigalev.projectsservice.domain.Task;
+import com.strigalev.projectsservice.domain.User;
 import com.strigalev.projectsservice.dto.ProjectDTO;
-import com.strigalev.projectsservice.exception.ResourceNotFoundException;
+import com.strigalev.projectsservice.exception.EmployeeException;
 import com.strigalev.projectsservice.mapper.ProjectListMapper;
 import com.strigalev.projectsservice.mapper.ProjectMapper;
 import com.strigalev.projectsservice.repository.ProjectRepository;
 import com.strigalev.projectsservice.service.ProjectService;
-import com.strigalev.projectsservice.service.TaskService;
-import com.strigalev.starter.rabbit.RabbitMQService;
-import org.springframework.context.annotation.Lazy;
+import com.strigalev.projectsservice.service.UserService;
+import com.strigalev.starter.exception.ResourceNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import static com.strigalev.projectsservice.domain.ProjectStatus.CREATED;
+import static com.strigalev.starter.model.UserAction.*;
 import static com.strigalev.starter.util.MethodsUtil.getProjectNotExistsMessage;
+import static com.strigalev.starter.util.MethodsUtil.getProjectWithNameNotExistsMessage;
 
 
 @Service
+@RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
     private final ProjectListMapper projectListMapper;
-    private final TaskService taskService;
-    private final RabbitMQService rabbitMQService;
+    private final UserService userService;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository,
-                              ProjectMapper projectMapper,
-                              ProjectListMapper projectListMapper,
-                              @Lazy TaskService taskService,
-                              RabbitMQService rabbitMQService) {
-        this.projectRepository = projectRepository;
-        this.projectMapper = projectMapper;
-        this.projectListMapper = projectListMapper;
-        this.taskService = taskService;
-        this.rabbitMQService = rabbitMQService;
+    @Override
+    public Project getProjectById(Long id) {
+        return projectRepository.findByIdAndDeletedIsFalse(id)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(getProjectNotExistsMessage(id))
+                );
     }
 
     @Override
-    @Transactional
-    public Project getProjectById(Long id) {
-        return projectRepository.findByIdAndActiveIsTrue(id)
+    public Project getProjectByTask(Task task) {
+        return projectRepository.findByTasksContainingAndDeletedIsFalse(task);
+    }
+
+    @Override
+    public Project getProjectByName(String name) {
+        return projectRepository.findByNameAndDeletedIsFalse(name)
                 .orElseThrow(
-                        () -> new ResourceNotFoundException(getProjectNotExistsMessage(id))
+                        () -> new ResourceNotFoundException(getProjectWithNameNotExistsMessage(name))
                 );
     }
 
@@ -57,24 +60,41 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public Long createProject(ProjectDTO projectDTO) {
-        Project project = projectMapper.map(projectDTO);
-        project.setCreationDate(LocalDate.now());
-        project.setDeadLineDate(LocalDate.parse(projectDTO.getDeadLineDate()));
-        project.setActive(true);
-        projectRepository.save(project);
-        return project.getId();
+    public Long addTaskToProject(Long projectId, Task task) {
+        Project project = getProjectById(projectId);
+        project.getTasks().add(task);
+
+        userService.sendManagerProjectAction(ADD_TASK_TO_PROJECT, project, task);
+
+        return task.getId();
     }
 
     @Override
-    public List<ProjectDTO> getAllProjects() {
-        return projectListMapper.map(projectRepository.findAll());
+    @Transactional
+    public Long createProject(ProjectDTO projectDTO) {
+        Project project = projectMapper.map(projectDTO);
+        project.setStatus(CREATED);
+
+        userService.sendManagerProjectAction(CREATE_PROJECT, projectRepository.save(project), null);
+
+        return project.getId();
     }
 
     @Override
     @Transactional
     public void deleteProject(Long id) {
-        projectRepository.deleteById(id);
+        Project project = getProjectById(id);
+        project.setDeleted(true);
+        project.getTasks().forEach(task -> task.setDeleted(true));
+
+        userService.sendManagerProjectAction(DELETE_PROJECT, project, null);
+    }
+
+    @Override
+    @Transactional
+    public void setProjectStatus(Long projectId, ProjectStatus status) {
+        Project project = getProjectById(projectId);
+        project.setStatus(status);
     }
 
     @Override
@@ -93,24 +113,8 @@ public class ProjectServiceImpl implements ProjectService {
     public void updateProject(ProjectDTO projectDTO) {
         Project savedProject = getProjectById(projectDTO.getId());
         projectMapper.updateProjectFromDto(projectDTO, savedProject);
-        projectRepository.save(savedProject);
-    }
 
-    @Override
-    @Transactional
-    public void softDeleteProject(Long id) {
-        Project project = getProjectById(id);
-        project.setActive(false);
-        taskService.softDeleteAllTasksByProjectId(id);
-        projectRepository.save(project);
-    }
-
-    @Override
-    @Transactional
-    public void addTaskToProject(Long projectId, Long taskId) {
-        Project project = getProjectById(projectId);
-        project.getTasks().add(taskService.getTaskById(taskId));
-        projectRepository.save(project);
+        userService.sendManagerProjectAction(UPDATE_PROJECT, savedProject, null);
     }
 
     @Override
@@ -123,11 +127,36 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Page<ProjectDTO> getActiveProjectsPage(Pageable pageable) {
-        Page<Project> projects = projectRepository.findAllByActiveIsTrue(pageable);
+    @Transactional
+    public void addUserToProject(Long projectId, Long userId) {
+        Project project = getProjectById(projectId);
+
+        if (!project.getEmployees().add(userService.getUserById(userId))) {
+            throw new EmployeeException(
+                    String.format("User with %oid is already working at %oid project", userId, projectId));
+
+        }
+
+        userService.sendManagerAction(ADD_USER_TO_PROJECT, project, null, userId);
+    }
+
+    @Override
+    public boolean isUserAndTaskMatchesOnProject(Task task, User user) {
+        if (projectRepository.existsByTasksContainingAndEmployeesContaining(task, user)) {
+            return true;
+        }
+        throw new EmployeeException(String.format("Task %oid and user %oid are not matching on project",
+                task.getId(),
+                user.getId()));
+    }
+
+    @Override
+    public Page<ProjectDTO> getProjectsPageByStatus(ProjectStatus status, Pageable pageable) {
+        Page<Project> projects = projectRepository.findAllByStatusAndDeletedIsFalse(pageable, status);
         if (projects.getContent().isEmpty()) {
             throw new ResourceNotFoundException("Page not found");
         }
+
         return projects.map(projectListMapper::map);
     }
 }

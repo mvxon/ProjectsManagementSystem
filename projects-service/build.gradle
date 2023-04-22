@@ -19,7 +19,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation group: 'org.flywaydb', name: 'flyway-core', version: '9.7.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-    testImplementation 'org.projectlombok:lombok:1.18.22'
+    testImplementation 'org.projectlombok:lombok:1.18.24'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
@@ -30,6 +30,8 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.17.5'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.7.5'
+    implementation group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-quartz', version: '2.7.5'
 }
 
 dependencyManagement {

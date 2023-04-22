@@ -12,12 +12,12 @@ spring:
     mongodb:
       host: localhost
       port: 27017
-      database: projects_audit
+      database: pms_audit
   rabbitmq:
     host: localhost
     password: guest
     port: 15672
     username: guest
-    exchange: projects.exchange
-    routing-key: projects.routingKey
-    queue: projects.queue
+    exchange: pms.exchange
+    audit-routing-key: audit.routingKey
+    audit-queue: audit.queue

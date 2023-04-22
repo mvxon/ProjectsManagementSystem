@@ -1,6 +1,7 @@
 package com.strigalev.projectsservice.endpoint;
 
 
+import com.strigalev.projectsservice.domain.ProjectStatus;
 import com.strigalev.projectsservice.dto.ProjectDTO;
 import com.strigalev.projectsservice.service.ProjectService;
 import com.strigalev.starter.dto.ApiResponseEntity;
@@ -37,8 +38,18 @@ public class ProjectEndpoint {
             @ApiResponse(responseCode = "404", description = "NOT FOUND", content = @Content),
             @ApiResponse(responseCode = "500", description = "INTERNAL ERROR", content = @Content)
     })
-    public ResponseEntity<Page<ProjectDTO>> getProjectsPage(Pageable pageable) {
-        return new ResponseEntity<>(projectService.getActiveProjectsPage(pageable), HttpStatus.OK);
+    public ResponseEntity<Page<ProjectDTO>> getProjects(Pageable pageable) {
+        return new ResponseEntity<>(projectService.getAllProjectsPage(pageable), HttpStatus.OK);
+    }
+
+    @GetMapping("/byStatus")
+    public ResponseEntity<Page<ProjectDTO>> getProjectsByStatus(
+            @RequestParam("status") String status,
+            Pageable pageable
+    ) {
+        return new ResponseEntity<>(projectService.getProjectsPageByStatus(ProjectStatus.valueOf(status.toUpperCase()),
+                pageable),
+                HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -60,7 +71,7 @@ public class ProjectEndpoint {
     @Operation(summary = "Create project", responses = {
             @ApiResponse(responseCode = "201",
                     description = "SUCCESSFULLY CREATED",
-                    content =  @Content(mediaType = "application/json",
+                    content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiResponseEntity.class))
             ),
             @ApiResponse(responseCode = "400", description = "BAD REQUEST", content = @Content),
@@ -70,6 +81,7 @@ public class ProjectEndpoint {
         return new ResponseEntity<>(
                 ApiResponseEntity.builder()
                         .object(projectService.createProject(projectDTO))
+                        .status(CREATED)
                         .build(),
                 CREATED
         );
@@ -83,7 +95,7 @@ public class ProjectEndpoint {
             @ApiResponse(responseCode = "500", description = "INTERNAL ERROR")
     })
     public void deleteProject(@PathVariable Long id) {
-        projectService.softDeleteProject(id);
+        projectService.deleteProject(id);
     }
 
     @PutMapping("/{id}")
@@ -96,5 +108,15 @@ public class ProjectEndpoint {
     public void updateProject(@PathVariable Long id, @RequestBody @Valid ProjectDTO projectDTO) {
         projectDTO.setId(id);
         projectService.updateProject(projectDTO);
+    }
+
+    @PatchMapping("/{id}")
+    public void setProjectStatus(@PathVariable Long id, @RequestParam("status") String status) {
+        projectService.setProjectStatus(id, ProjectStatus.valueOf(status.toUpperCase()));
+    }
+
+    @PatchMapping("/addUser/{id}")
+    public void addUserToProject(@PathVariable Long id, @RequestParam("userId") Long userId) {
+        projectService.addUserToProject(id, userId);
     }
 }

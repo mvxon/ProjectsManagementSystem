@@ -14,6 +14,8 @@ dist/
 # Package files
 *.jar
 
+*.bin
+*.lock
 # Maven
 target/
 
@@ -93,3 +95,14 @@ HELP.md
 /.gradle/
 /gradlew.bat
 /gradlew
+/mail-service/gradlew
+/mail-service/gradlew.bat
+/report-service/gradle/
+/report-service/build/
+/report-service/gradlew
+/report-service/gradlew.bat
+/notification-service/gradle/
+/notification-service/build/
+/notification-service/gradlew
+/notification-service/gradlew.bat
+/gradle/

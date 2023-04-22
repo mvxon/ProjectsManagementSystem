@@ -1,8 +1,6 @@
 server:
   port: 8777
 spring:
-  main:
-    web-application-type: reactive
   application:
     name: api-gateway
   cloud:

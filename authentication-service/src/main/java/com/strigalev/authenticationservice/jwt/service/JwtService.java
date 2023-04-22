@@ -1,24 +1,20 @@
 package com.strigalev.authenticationservice.jwt.service;
 
+import com.strigalev.authenticationservice.domain.User;
 import com.strigalev.authenticationservice.jwt.RefreshToken;
-import com.strigalev.authenticationservice.security.model.CustomUserDetails;
 import com.strigalev.starter.dto.TokenDTO;
 
 public interface JwtService {
 
-    String generateAccessToken(CustomUserDetails userDetails);
+    String generateAccessToken(User userDetails);
 
-    String generateRefreshToken(CustomUserDetails user, RefreshToken refreshToken);
+    String generateRefreshToken(User user, RefreshToken refreshToken);
 
     void validateAndDeleteRefreshToken(String refreshToken);
 
-    TokenDTO generateTokensPair(CustomUserDetails userDetails);
-
-    void validateAccessToken(String token);
+    TokenDTO generateTokensPair(User user);
 
     void validateRefreshToken(String token);
-
-    String getUserEmailFromAccessToken(String token);
 
     String getUserEmailFromRefreshToken(String token);
 

@@ -1,26 +1,33 @@
 package com.strigalev.projectsservice.repository;
 
 import com.strigalev.projectsservice.domain.Task;
+import com.strigalev.projectsservice.domain.TaskStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    Optional<Task> findByIdAndActiveIsTrue(Long id);
 
-    @Query(value = "SELECT * FROM tasks WHERE project_id = :id AND active = true", nativeQuery = true)
-    Page<Task> findAllByProjectIdAndActiveIsTrue(Pageable pageable, @Param("id") Long projectId);
+    Optional<Task> findTaskByIdAndDeletedIsFalse(Long id);
 
-    @Query(value = "SELECT * FROM tasks WHERE project_id = :id", nativeQuery = true)
-    Page<Task> findAllByProjectId(Pageable pageable, @Param("id") Long projectId);
+    Page<Task> findAllByProjectIdAndDeletedIsFalse(Pageable pageable, Long projectId);
+
+    Page<Task> findAllByProjectIdAndStatusAndDeletedIsFalse(Pageable pageable, Long projectId, TaskStatus status);
+
+    Page<Task> findAllByCreationDateBetweenAndProjectIdAndDeletedIsFalse(Pageable pageable,
+                                                                         LocalDateTime from,
+                                                                         LocalDateTime to,
+                                                                         Long projectId);
 
     @Modifying
-    @Query(value = "UPDATE tasks SET active = false WHERE project_id = :id", nativeQuery = true)
-    void setActiveFalseAllTasksByProjectId(@Param("id") Long projectId);
+    @Transactional
+    @Query("UPDATE Task SET status = :status WHERE id = :id")
+    void updateTaskStatus(Long id, TaskStatus status);
 }

@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "tasks")
@@ -23,9 +24,22 @@ public class Task {
     private Long id;
     private String title;
     private String description;
-    private LocalDate creationDate;
-    private LocalDate deadLineDate;
-    private boolean active;
+
+    @Column(name = "project_id")
+    private Long projectId;
+
+    @CreationTimestamp
+    private LocalDateTime creationDate;
+    private LocalDateTime deadLineDate;
+
+    @UpdateTimestamp
+    private LocalDateTime updateDate;
+
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
+
+    private boolean deleted;
+
     @ManyToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE}
@@ -34,15 +48,5 @@ public class Task {
             name = "tasks_employees",
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "employee_id"))
-    Set<User> employees;
-
-    @PreRemove
-    private void preRemove() {
-        employees.forEach(employee -> {
-            Set<Task> tasks = employee.getWorkingTasks().stream()
-                    .filter(task -> !task.equals(this))
-                    .collect(Collectors.toSet());
-            employee.setWorkingTasks(tasks);
-        });
-    }
+    private Set<User> employees;
 }

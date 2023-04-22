@@ -1,9 +1,11 @@
 package com.strigalev.projectsservice.exception;
 
 import com.strigalev.starter.dto.ApiResponseEntity;
+import com.strigalev.starter.exception.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -11,8 +13,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.DateTimeException;
+
 import static com.strigalev.starter.util.MethodsUtil.getBindingResultErrors;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
@@ -47,6 +52,42 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ApiResponseEntity.builder()
                 .message(ex.getMessage())
                 .status(NOT_FOUND)
+                .build();
+    }
+
+    @ExceptionHandler(InvalidStatusException.class)
+    @ResponseStatus(BAD_REQUEST)
+    protected ApiResponseEntity handleInvalidStatusException (InvalidStatusException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(BAD_REQUEST)
+                .build();
+    }
+
+    @ExceptionHandler(DateTimeException.class)
+    @ResponseStatus(BAD_REQUEST)
+    protected ApiResponseEntity handleDateTimeException(DateTimeException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(BAD_REQUEST)
+                .build();
+    }
+
+    @ExceptionHandler(EmployeeException.class)
+    @ResponseStatus(BAD_REQUEST)
+    protected ApiResponseEntity handleEmployeeException(EmployeeException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(BAD_REQUEST)
+                .build();
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(FORBIDDEN)
+    protected ApiResponseEntity handleBadCredentials(BadCredentialsException ex) {
+        return ApiResponseEntity.builder()
+                .message(ex.getMessage())
+                .status(FORBIDDEN)
                 .build();
     }
 }

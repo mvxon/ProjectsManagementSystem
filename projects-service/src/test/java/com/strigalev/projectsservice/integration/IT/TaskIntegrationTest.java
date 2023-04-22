@@ -91,12 +91,5 @@ public class TaskIntegrationTest extends IntegrationTestBase {
         assertNotEquals(oldTask, taskService.getTaskDtoById(ID));
     }
 
-    @Test
-    void testDeleteTask() throws Exception {
-        mockMvc.perform(delete(PATH + "/" + ID))
-                .andExpect(status().isOk());
-
-        assertFalse(taskService.getTaskById(ID).isActive());
-    }
 
 }

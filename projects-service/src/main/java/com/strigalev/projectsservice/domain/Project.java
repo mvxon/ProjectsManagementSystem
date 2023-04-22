@@ -4,13 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "projects")
@@ -22,18 +21,30 @@ public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(unique = true)
     private String name;
     private String title;
     private String description;
     private String customer;
-    private LocalDate creationDate;
-    private LocalDate deadLineDate;
-    private boolean active;
+
+    @CreationTimestamp
+    private LocalDateTime creationDate;
+    private LocalDateTime deadLineDate;
+
+    @UpdateTimestamp
+    private LocalDateTime updateDate;
+
+    @Enumerated(EnumType.STRING)
+    private ProjectStatus status;
+
+    private boolean deleted;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "project_id")
-    @Where(clause = "active")
-    List<Task> tasks;
+    private Set<Task> tasks;
+
+
     @ManyToMany(
             fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE}
@@ -42,16 +53,5 @@ public class Project {
             name = "projects_employees",
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "employee_id"))
-    Set<User> employees;
-
-    @PreRemove
-    private void preRemove() {
-        employees.forEach(employee -> {
-            Set<Project> projects = employee.getWorkingProjects().stream()
-                    .filter(project -> !project.equals(this))
-                    .collect(Collectors.toSet());
-            employee.setWorkingProjects(projects);
-        });
-    }
-
+    private Set<User> employees;
 }
